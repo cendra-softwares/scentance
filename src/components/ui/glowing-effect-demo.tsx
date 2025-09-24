@@ -1,9 +1,11 @@
+
 "use client";
 
 import { Beaker, Droplets, Heart, Star, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
+import React from "react";
 
 export function GlowingEffectDemo() {
   return (
@@ -49,7 +51,7 @@ interface GridItemProps {
   description: React.ReactNode;
 }
 
-const GridItem = ({ area, icon, title, description }: GridItemProps) => {
+const GridItem = React.memo(({ area, icon, title, description }: GridItemProps) => {
   return (
     <motion.li
       className={cn("min-h-[14rem] list-none", area)}
@@ -85,4 +87,6 @@ const GridItem = ({ area, icon, title, description }: GridItemProps) => {
       </div>
     </motion.li>
   );
-};
+});
+
+GridItem.displayName = "GridItem";

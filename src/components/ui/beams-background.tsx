@@ -46,7 +46,7 @@ export function BeamsBackground({
     const beamsRef = useRef<Beam[]>([]);
     const animationFrameRef = useRef<number>(0);
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const MINIMUM_BEAMS = isMobile ? 10 : 20;
+    const MINIMUM_BEAMS = isMobile ? 5 : 10;
 
     const opacityMap = {
         subtle: 0.7,
@@ -164,7 +164,7 @@ export function BeamsBackground({
                 cancelAnimationFrame(animationFrameRef.current);
             }
         };
-    }, [intensity]);
+    }, [intensity, isMobile]);
 
     return (
         <div
