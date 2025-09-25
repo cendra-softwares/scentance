@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 interface AnimatedGradientBackgroundProps {
     className?: string;
     intensity?: "subtle" | "medium" | "strong";
+    disableOnMobile?: boolean;
 }
 
 interface Beam {
@@ -41,11 +42,13 @@ function createBeam(width: number, height: number, isMobile: boolean): Beam {
 export function BeamsBackground({
     className,
     intensity = "strong",
+    disableOnMobile = false,
 }: AnimatedGradientBackgroundProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const beamsRef = useRef<Beam[]>([]);
     const animationFrameRef = useRef<number>(0);
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const shouldDisable = disableOnMobile && isMobile;
     const MINIMUM_BEAMS = isMobile ? 5 : 10;
 
     const opacityMap = {
@@ -55,6 +58,8 @@ export function BeamsBackground({
     };
 
     useEffect(() => {
+        if (shouldDisable) return;
+
         const canvas = canvasRef.current;
         if (!canvas) return;
 

@@ -1,20 +1,35 @@
 "use client";
 
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
+import { Cormorant_Garamond, Gayathri } from "next/font/google";
 import "./globals.css";
 import dynamic from "next/dynamic";
 
-const BeamsBackground = dynamic(() => import("@/components/ui/beams-background").then(mod => mod.BeamsBackground), { ssr: false });
+const MeshBackground = dynamic(() => import("@/components/ui/mesh-background"), { ssr: false });
 
-const geistSans = Geist({
+const geistSans = localFont({
+  src: "../fonts/GeistVariableVF.woff2",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  weight: "100 900",
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "../fonts/GeistMonoVariableVF.woff2",
   variable: "--font-geist-mono",
+  weight: "100 900",
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  variable: "--font-cormorant-garamond",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const gayathri = Gayathri({
+  variable: "--font-gayathri",
+  subsets: ["latin"],
+  weight: "700", // Assuming 'bold' corresponds to a weight of 700
 });
 
 export default function RootLayout({
@@ -25,9 +40,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${cormorantGaramond.variable} ${gayathri.variable} antialiased`}
       >
-        <BeamsBackground className="fixed inset-0 -z-10" />
+        <MeshBackground className="fixed inset-0 -z-10" />
         <div className="relative z-10">
           {children}
         </div>

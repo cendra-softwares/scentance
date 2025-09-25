@@ -2,6 +2,18 @@
 
 import { motion } from "framer-motion";
 import { GlowingEffectDemo } from "@/components/ui/glowing-effect-demo";
+import { GlowCard } from "@/components/ui/spotlight-card";
+
+
+function Default(){
+  return(
+    <div className="w-screen h-screen flex flex-row items-center justify-center gap-10 custom-cursor">
+      <GlowCard />
+      <GlowCard />
+      <GlowCard />
+    </div>
+  );
+};
 
 export default function Home() {
   return (
@@ -13,16 +25,16 @@ export default function Home() {
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <motion.h1
-          className="font-serif text-5xl sm:text-7xl lg:text-8xl font-bold"
+          className={`font-cormorant-garamond text-5xl sm:text-7xl lg:text-8xl font-medium text-shadow-blur`}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
         >
-          Scentance
+          SCENTENCE
         </motion.h1>
 
         <motion.blockquote
-          className="text-sm sm:text-base lg:text-lg italic text-gray-600 dark:text-gray-400"
+          className="font-cormorant-garamond text-sm sm:text-base lg:text-lg italic text-gray-600 dark:text-gray-400"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
@@ -38,6 +50,7 @@ export default function Home() {
       >
         <GlowingEffectDemo />
       </motion.div>
+      <Default />
     </div>
   );
 }
