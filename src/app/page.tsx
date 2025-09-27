@@ -2,18 +2,6 @@
 
 import { motion } from "framer-motion";
 import { GlowingEffectDemo } from "@/components/ui/glowing-effect-demo";
-import { GlowCard } from "@/components/ui/spotlight-card";
-
-
-function Default(){
-  return(
-    <div className="w-screen h-screen flex flex-row items-center justify-center gap-10 custom-cursor">
-      <GlowCard />
-      <GlowCard />
-      <GlowCard />
-    </div>
-  );
-};
 
 export default function Home() {
   return (
@@ -50,7 +38,6 @@ export default function Home() {
       >
         <GlowingEffectDemo />
       </motion.div>
-      <Default />
     </div>
   );
 }
