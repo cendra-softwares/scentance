@@ -79,3 +79,9 @@
   --sidebar-border: oklch(1 0 0 / 0.2);
   --sidebar-ring: oklch(1 0 0 / 0.3);
 }
+
+.text-glow {
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.4), /* subtle white glow */
+    0 0 12px rgba(255, 255, 255, 0.2); /* softer white glow */
+}
