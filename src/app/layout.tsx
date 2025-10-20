@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import { Gayathri } from "next/font/google";
 import "./globals.css";
 import dynamic from "next/dynamic";
+import Footer from "@/components/footer";
 
 const MeshBackground = dynamic(() => import("@/components/ui/mesh-background"), { ssr: false });
 
@@ -46,6 +47,7 @@ export default function RootLayout({
         <div className="relative z-10">
           {children}
         </div>
+        <Footer />
       </body>
     </html>
   );
