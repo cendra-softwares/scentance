@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button'; // Assuming you have a Button component from shadcn/ui
 import BlurText from './BlurText';
@@ -14,11 +14,12 @@ interface HeroProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> 
 // --- HERO SECTION COMPONENT ---
 export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
   ({ title, subtitle, images, className, ...props }, ref) => {
-    const [currentIndex, setCurrentIndex] = React.useState(Math.floor(images.length / 2));
-    const [translateXPercentage, setTranslateXPercentage] = React.useState(45); // Default for larger screens
-    const [startX, setStartX] = React.useState(0);
-    const [endX, setEndX] = React.useState(0);
-    const [isSwiping, setIsSwiping] = React.useState(false);
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const [currentIndex, setCurrentIndex] = useState(Math.floor(images.length / 2));
+    const [translateXPercentage, setTranslateXPercentage] = useState(45); // Default for larger screens
+    const [startX, setStartX] = useState(0);
+    const [endX, setEndX] = useState(0);
+    const [isSwiping, setIsSwiping] = useState(false);
 
     const handleAnimationComplete = () => {
       console.log('Animation completed!');
@@ -77,9 +78,34 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
       return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 100) { // Adjust threshold as needed
+                sectionRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                });
+                window.removeEventListener('scroll', handleScroll); // Remove listener after scrolling
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
     return (
       <div
-        ref={ref}
+        ref={node => {
+          sectionRef.current = node;
+          if (typeof ref === 'function') {
+            ref(node);
+          } else if (ref) {
+            (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+          }
+        }}
         className={cn(
           'relative w-full min-h-screen flex flex-col items-center justify-center overflow-x-hidden bg-background text-foreground p-4',
           className
