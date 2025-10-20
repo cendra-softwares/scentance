@@ -1,32 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { GlowingEffectDemo } from "@/components/ui/glowing-effect-demo";
-import { Button } from "@/components/ui/button";
-import ProductShowcase from "@/components/ui/ProductShowcase";
-import AboutSection from "@/components/ui/AboutSection";
-import ContactSection from "@/components/ui/ContactSection";
-
-const products = [
-  {
-    name: "Midnight Bloom",
-    description: "A captivating blend of jasmine and dark amber.",
-    imageUrl: "/next.svg", // Placeholder image
-    price: "$120",
-  },
-  {
-    name: "Golden Hour",
-    description: "Warm notes of vanilla and sandalwood, reminiscent of twilight.",
-    imageUrl: "/vercel.svg", // Placeholder image
-    price: "$110",
-  },
-  {
-    name: "Ocean Breeze",
-    description: "Crisp and refreshing, with hints of sea salt and citrus.",
-    imageUrl: "/globe.svg", // Placeholder image
-    price: "$95",
-  },
-];
+import { HeroSection } from "@/components/hero-section";
 
 export default function Home() {
   return (
@@ -54,30 +29,20 @@ export default function Home() {
         >
           &ldquo;Scent woven into essence.&rdquo;
         </motion.blockquote>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-        >
-          <Button
-            variant="outline"
-            className="text-primary-foreground border-primary-foreground hover:bg-primary-foreground hover:text-background"
-          >
-            Explore Collection
-          </Button>
-        </motion.div>
       </motion.main>
-      <motion.div
-        className="mt-96"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 0.6 }}
-      >
-        <GlowingEffectDemo />
-      </motion.div>
-      <ProductShowcase products={products} />
-      <AboutSection />
-      <ContactSection />
+
+      {/* Hero Section with Image Carousel */}
+      <HeroSection
+        title="Discover Your Signature Scent"
+        subtitle="Explore our curated collection of premium fragrances that tell your unique story"
+        images={[
+          { src: "/images/Mock_1.png", alt: "Premium fragrance bottle 1" },
+          { src: "/images/Mock_2.png", alt: "Premium fragrance bottle 2" },
+          { src: "/images/Mock_4.png", alt: "Premium fragrance bottle 3" },
+          { src: "/images/Mock_5.png", alt: "Premium fragrance bottle 4" },
+          { src: "/images/Mock_8.png", alt: "Premium fragrance bottle 5" }
+        ]}
+      />
     </div>
   );
 }
