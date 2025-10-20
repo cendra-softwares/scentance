@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button'; // Assuming you have a Button component from shadcn/ui
+import BlurText from './BlurText';
 import { cn } from '@/lib/utils'; // Assuming you have a utility for class names
 
 // --- TYPES ---
@@ -15,6 +16,10 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
   ({ title, subtitle, images, className, ...props }, ref) => {
     const [currentIndex, setCurrentIndex] = React.useState(Math.floor(images.length / 2));
     const [translateXPercentage, setTranslateXPercentage] = React.useState(45); // Default for larger screens
+
+    const handleAnimationComplete = () => {
+      console.log('Animation completed!');
+    };
 
     const handleNext = React.useCallback(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -59,12 +64,22 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
         <div className="z-10 flex w-full flex-col items-center text-center space-y-8 md:space-y-12">
           {/* Header Section */}
           <div className="space-y-4">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter max-w-4xl text-white">
-              {title}
-            </h1>
-            <p className="max-w-2xl mx-auto text-white/80 md:text-xl">
-              {subtitle}
-            </p>
+            <BlurText
+              text={title as string}
+              delay={150}
+              animateBy="words"
+              direction="top"
+              onAnimationComplete={handleAnimationComplete}
+              className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter max-w-4xl text-white"
+            />
+            <BlurText
+              text={subtitle}
+              delay={150}
+              animateBy="words"
+              direction="top"
+              onAnimationComplete={handleAnimationComplete}
+              className="max-w-2xl mx-auto text-white/80 md:text-xl"
+            />
           </div>
 
           {/* Main Showcase Section */}
