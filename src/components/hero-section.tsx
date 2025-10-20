@@ -16,6 +16,9 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
   ({ title, subtitle, images, className, ...props }, ref) => {
     const [currentIndex, setCurrentIndex] = React.useState(Math.floor(images.length / 2));
     const [translateXPercentage, setTranslateXPercentage] = React.useState(45); // Default for larger screens
+    const [startX, setStartX] = React.useState(0);
+    const [endX, setEndX] = React.useState(0);
+    const [isSwiping, setIsSwiping] = React.useState(false);
 
     const handleAnimationComplete = () => {
       console.log('Animation completed!');
@@ -28,13 +31,37 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
     const handlePrev = () => {
       setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
     };
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+      setStartX(e.touches[0].clientX);
+      setEndX(e.touches[0].clientX); // Initialize endX with startX
+      setIsSwiping(true);
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+      setEndX(e.touches[0].clientX);
+    };
+
+    const handleTouchEnd = () => {
+      const swipeDistance = startX - endX;
+      if (swipeDistance > 50) { // Swiped left
+        handleNext();
+      } else if (swipeDistance < -50) { // Swiped right
+        handlePrev();
+      }
+      setStartX(0);
+      setEndX(0);
+      setIsSwiping(false);
+    };
     
     React.useEffect(() => {
+        if (isSwiping) return; // Don't auto-scroll if swiping
+
         const timer = setInterval(() => {
             handleNext();
         }, 4000);
         return () => clearInterval(timer);
-    }, [handleNext]);
+    }, [handleNext, isSwiping]);
 
     React.useEffect(() => {
       const handleResize = () => {
@@ -85,7 +112,12 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
           {/* Main Showcase Section */}
           <div className="relative w-full h-[350px] md:h-[450px] flex items-center justify-center">
             {/* Carousel Wrapper */}
-            <div className="relative w-full h-full flex items-center justify-center [perspective:1000px]">
+            <div
+              className="relative w-full h-full flex items-center justify-center [perspective:1000px]"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               {images.map((image, index) => {
                 const offset = index - currentIndex;
                 const total = images.length;

@@ -2,7 +2,7 @@
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Cormorant_Garamond, Gayathri } from "next/font/google";
+import { Gayathri } from "next/font/google";
 import "./globals.css";
 import dynamic from "next/dynamic";
 
@@ -20,10 +20,10 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-const cormorantGaramond = Cormorant_Garamond({
+const cormorantGaramond = localFont({
+  src: "../../public/fonts/Cormorant_Garamond/CormorantGaramond-VariableFont_wght.ttf",
   variable: "--font-cormorant-garamond",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: "300 700",
 });
 
 const gayathri = Gayathri({

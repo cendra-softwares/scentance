@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-cormorant-garamond);
   --font-mono: var(--font-geist-mono);
   --color-destructive-foreground: var(--destructive-foreground);
 }
