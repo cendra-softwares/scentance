@@ -77,6 +77,7 @@ export default function BottleScrollSection({ className = '' }: BottleScrollSect
   }, [frameIndex, imagesLoaded]);
 
   const scrollProgress = useTransform(smoothScrollY, [0, 1], [0, 100]);
+  const scrollPillOpacity = useTransform(smoothScrollY, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
 
   return (
     <div 
@@ -97,6 +98,17 @@ export default function BottleScrollSection({ className = '' }: BottleScrollSect
             </div>
           </div>
         )}
+
+        <motion.div 
+          className="absolute bottom-12 left-1/2 -translate-x-1/2 pointer-events-none"
+          style={{ opacity: scrollPillOpacity }}
+        >
+          <div className="flex items-center gap-3 bg-black/50 backdrop-blur-sm px-6 py-3 rounded-full border border-white/20">
+            <div className="w-2 h-2 bg-[oklch(0.65_0.25_25)] rounded-full animate-pulse" />
+            <span className="font-geist-sans text-white/60 text-sm">Scroll to explore</span>
+            <div className="w-2 h-2 bg-white/40 rounded-full" />
+          </div>
+        </motion.div>
       </div>
 
       <div className="absolute inset-0 pointer-events-none">
@@ -116,7 +128,7 @@ function HeroSection({ progress }: { progress: any }) {
   const inCTASection = useTransform(progress, [0.85, 1], [0, 1]);
 
   return (
-    <div className="w-full max-w-4xl px-8">
+    <div className="w-full max-w-4xl px-4 sm:px-8">
       <motion.div 
         className="text-center"
         style={{ opacity: inHeroSection }}
@@ -126,17 +138,17 @@ function HeroSection({ progress }: { progress: any }) {
           delay={150}
           animateBy="words"
           direction="top"
-          className="font-cormorant-garamond text-6xl sm:text-7xl lg:text-8xl font-medium text-glow text-white mb-6"
+          className="font-cormorant-garamond text-5xl sm:text-6xl lg:text-7xl lg:text-8xl font-medium text-glow text-white mb-6"
         />
         <BlurText
           text="Scent woven into essence."
           delay={200}
           animateBy="words"
           direction="top"
-          className="font-geist-sans text-xl sm:text-2xl text-white/80 mb-4"
+          className="font-geist-sans text-lg sm:text-xl lg:text-2xl text-white/80 mb-4"
         />
         <motion.p 
-          className="font-geist-sans text-lg text-white/60"
+          className="font-geist-sans text-base sm:text-lg text-white/60"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
@@ -146,146 +158,133 @@ function HeroSection({ progress }: { progress: any }) {
       </motion.div>
 
       <motion.div 
-        className="absolute left-8 sm:left-16 top-1/2 -translate-y-1/2 max-w-md"
+        className="absolute inset-0 flex items-start justify-center px-8 pt-16 pb-8 sm:relative sm:left-8 sm:left-16 sm:top-1/4 sm:-translate-y-1/2 sm:max-w-md"
         style={{ opacity: inCraftsmanshipSection }}
       >
-        <BlurText
-          text="Crafted by master perfumers."
-          delay={150}
-          animateBy="words"
-          direction="top"
-          className="font-cormorant-garamond text-4xl sm:text-5xl text-white mb-6"
-        />
-        <div className="space-y-3">
-          <motion.p 
-            className="font-geist-sans text-white/80 text-lg"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            Each fragrance tells a story—layers of top, heart, and base notes.
-          </motion.p>
-          <motion.p 
-            className="font-geist-sans text-white/80 text-lg"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            Hand-selected ingredients from around the world, blended with precision.
-          </motion.p>
+        <div className="max-w-md text-center sm:text-left">
+          <BlurText
+            text="Crafted by master perfumers."
+            delay={150}
+            animateBy="words"
+            direction="top"
+            className="font-cormorant-garamond text-3xl sm:text-4xl sm:text-5xl text-white mb-6"
+          />
+          <div className="space-y-3">
+            <motion.p 
+              className="font-geist-sans text-white/80 text-base sm:text-lg"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              Each fragrance tells a story—layers of top, heart, and base notes.
+            </motion.p>
+            <motion.p 
+              className="font-geist-sans text-white/80 text-base sm:text-lg"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              Hand-selected ingredients from around the world, blended with precision.
+            </motion.p>
+          </div>
         </div>
       </motion.div>
 
       <motion.div 
-        className="absolute right-8 sm:right-16 top-1/2 -translate-y-1/2 max-w-md text-right"
+        className="absolute inset-0 flex items-start justify-center px-8 pt-16 pb-8 sm:relative sm:right-8 sm:right-16 sm:top-1/4 sm:-translate-y-1/2 sm:max-w-md"
         style={{ opacity: inNotesSection }}
       >
-        <BlurText
-          text="Notes that unfold over time."
-          delay={150}
-          animateBy="words"
-          direction="top"
-          className="font-cormorant-garamond text-4xl sm:text-5xl text-white mb-6"
-        />
-        <div className="space-y-3">
-          <motion.p 
-            className="font-geist-sans text-white/80 text-lg"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <span className="text-white/60">Top notes:</span> bright bergamot, sparkling citrus
-          </motion.p>
-          <motion.p 
-            className="font-geist-sans text-white/80 text-lg"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <span className="text-white/60">Heart notes:</span> delicate jasmine, warm amber
-          </motion.p>
-          <motion.p 
-            className="font-geist-sans text-white/80 text-lg"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            <span className="text-white/60">Base notes:</span> deep sandalwood, sensual musk
-          </motion.p>
+        <div className="max-w-md text-center sm:text-right">
+          <BlurText
+            text="Notes that unfold over time."
+            delay={150}
+            animateBy="words"
+            direction="top"
+            className="font-cormorant-garamond text-3xl sm:text-4xl sm:text-5xl text-white mb-6"
+          />
+          <div className="space-y-3">
+            <motion.p 
+              className="font-geist-sans text-white/80 text-base sm:text-lg"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <span className="text-white/60">Top notes:</span> bright bergamot, sparkling citrus
+            </motion.p>
+            <motion.p 
+              className="font-geist-sans text-white/80 text-base sm:text-lg"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <span className="text-white/60">Heart notes:</span> delicate jasmine, warm amber
+            </motion.p>
+            <motion.p 
+              className="font-geist-sans text-white/80 text-base sm:text-lg"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              <span className="text-white/60">Base notes:</span> deep sandalwood, sensual musk
+            </motion.p>
+          </div>
         </div>
       </motion.div>
 
       <motion.div 
-        className="absolute left-8 sm:left-16 top-1/2 -translate-y-1/2 max-w-md"
+        className="absolute inset-0 flex items-start justify-center px-8 pt-16 pb-8 sm:relative sm:left-8 sm:left-16 sm:top-1/4 sm:-translate-y-1/2 sm:max-w-md"
         style={{ opacity: inEssenceSection }}
       >
-        <BlurText
-          text="Pure essence, captured."
-          delay={150}
-          animateBy="words"
-          direction="top"
-          className="font-cormorant-garamond text-4xl sm:text-5xl text-white mb-6"
-        />
-        <div className="space-y-3">
-          <motion.p 
-            className="font-geist-sans text-white/80 text-lg"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            A symphony of ingredients, transformed into liquid gold.
-          </motion.p>
-          <motion.p 
-            className="font-geist-sans text-white/80 text-lg"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            Every drop carries the soul of its origins—crafted to perfection.
-          </motion.p>
+        <div className="max-w-md text-center sm:text-left">
+          <BlurText
+            text="Pure essence, captured."
+            delay={150}
+            animateBy="words"
+            direction="top"
+            className="font-cormorant-garamond text-3xl sm:text-4xl sm:text-5xl text-white mb-6"
+          />
+          <div className="space-y-3">
+            <motion.p 
+              className="font-geist-sans text-white/80 text-base sm:text-lg"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              A symphony of ingredients, transformed into liquid gold.
+            </motion.p>
+            <motion.p 
+              className="font-geist-sans text-white/80 text-base sm:text-lg"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              Every drop carries soul of its origins—crafted to perfection.
+            </motion.p>
+          </div>
         </div>
       </motion.div>
 
       <motion.div 
-        className="text-center"
+        className="absolute inset-0 flex items-start justify-center px-8 pt-16 pb-8 sm:relative sm:right-8 sm:right-16 sm:top-1/4 sm:-translate-y-1/2 sm:max-w-md"
         style={{ opacity: inCTASection }}
       >
-        <BlurText
-          text="Find your signature."
-          delay={150}
-          animateBy="words"
-          direction="top"
-          className="font-cormorant-garamond text-5xl sm:text-6xl text-white mb-4"
-        />
-        <motion.p 
-          className="font-geist-sans text-xl text-white/80 mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          SCENTENCE. Where scent becomes essence.
-        </motion.p>
-        <motion.div 
-          className="flex flex-col sm:flex-row gap-4 items-center justify-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          <motion.button
-            className="px-8 py-4 bg-transparent border-2 border-[oklch(0.65_0.25_25)] text-white font-geist-sans text-lg rounded-full hover:bg-[oklch(0.65_0.25_25)] hover:text-black transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+        <div className="max-w-md text-center sm:text-right">
+          <BlurText
+            text="Find your signature."
+            delay={150}
+            animateBy="words"
+            direction="top"
+            className="font-cormorant-garamond text-3xl sm:text-4xl sm:text-5xl text-white mb-6"
+          />
+          <motion.p 
+            className="font-geist-sans text-white/80 text-base sm:text-lg"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
           >
-            Discover Collection
-          </motion.button>
-          <motion.a
-            href="#perfumes"
-            className="px-8 py-4 text-white/80 font-geist-sans text-lg hover:text-white transition-colors duration-300"
-            whileHover={{ scale: 1.05 }}
-          >
-            Explore Notes
-          </motion.a>
-        </motion.div>
+            SCENTENCE. Where scent becomes essence.
+          </motion.p>
+        </div>
       </motion.div>
     </div>
   );
