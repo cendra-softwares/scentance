@@ -9,11 +9,12 @@ interface HeroProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> 
   title: React.ReactNode;
   subtitle: string;
   images: { src: string; alt: string; }[];
+  disableAutoScroll?: boolean;
 }
 
 // --- HERO SECTION COMPONENT ---
 export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
-  ({ title, subtitle, images, className, ...props }, ref) => {
+  ({ title, subtitle, images, className, disableAutoScroll = false, ...props }, ref) => {
     const sectionRef = useRef<HTMLDivElement>(null);
     const [currentIndex, setCurrentIndex] = useState(Math.floor(images.length / 2));
     const [translateXPercentage, setTranslateXPercentage] = useState(45); // Default for larger screens
@@ -79,6 +80,8 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
     }, []);
 
     useEffect(() => {
+        if (disableAutoScroll) return;
+
         const handleScroll = () => {
             if (window.scrollY > 100) { // Adjust threshold as needed
                 sectionRef.current?.scrollIntoView({
@@ -94,7 +97,7 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
         return () => {
             window.removeEventListener('scroll', handleScroll);
         };
-    }, []);
+    }, [disableAutoScroll]);
 
     return (
       <div

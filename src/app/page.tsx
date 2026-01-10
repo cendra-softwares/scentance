@@ -38,6 +38,7 @@ export default function Home() {
         <HeroSection
           title="Discover Your Signature Scent"
           subtitle="Explore our curated collection of premium fragrances that tell your unique story"
+          disableAutoScroll={true}
           images={[
             { src: "/images/Mock_1.png", alt: "Premium fragrance bottle 1" },
             { src: "/images/Mock_2.png", alt: "Premium fragrance bottle 2" },
