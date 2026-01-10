@@ -111,7 +111,7 @@ export default function BottleScrollSection({ className = '' }: BottleScrollSect
         </motion.div>
       </div>
 
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="hidden sm:hidden absolute inset-0 pointer-events-none">
         <div className="sticky top-0 left-0 right-0 h-screen flex flex-col items-center justify-center">
           <HeroSection progress={smoothScrollY} />
         </div>
