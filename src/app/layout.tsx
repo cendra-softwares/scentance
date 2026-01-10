@@ -2,23 +2,21 @@
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Gayathri } from "next/font/google";
+import { Geist, Geist_Mono, Gayathri } from "next/font/google";
 import "./globals.css";
 import dynamic from "next/dynamic";
 import Footer from "@/components/footer";
 
 const MeshBackground = dynamic(() => import("@/components/ui/mesh-background"), { ssr: false });
 
-const geistSans = localFont({
-  src: "../fonts/GeistVariableVF.woff2",
+const geistSans = Geist({
   variable: "--font-geist-sans",
-  weight: "100 900",
+  subsets: ["latin"],
 });
 
-const geistMono = localFont({
-  src: "../fonts/GeistMonoVariableVF.woff2",
+const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  weight: "100 900",
+  subsets: ["latin"],
 });
 
 const cormorantGaramond = localFont({
