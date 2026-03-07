@@ -28,21 +28,21 @@ const products = [
 
 const getSpanClasses = (index: number) => {
   const pattern = [
-    "md:col-span-2 md:row-span-2", // 0: Large
-    "col-span-1 row-span-1",       // 1: Normal
-    "col-span-1 md:row-span-2",    // 2: Tall
-    "md:col-span-2 row-span-1",    // 3: Wide
-    "col-span-1 row-span-1",       // 4: Normal
-    "col-span-1 row-span-1",       // 5: Normal
-    "md:col-span-2 md:row-span-2", // 6: Large
-    "col-span-1 row-span-1",       // 7: Normal
-    "col-span-1 md:row-span-2",    // 8: Tall
-    "col-span-1 row-span-1",       // 9: Normal
-    "md:col-span-2 row-span-1",    // 10: Wide
-    "col-span-1 row-span-1",       // 11: Normal
-    "col-span-1 row-span-1",       // 12: Normal
-    "col-span-1 md:row-span-2",    // 13: Tall
-    "md:col-span-2 md:row-span-2", // 14: Large
+    "col-span-2 md:col-span-2 md:row-span-2", // 0: Large
+    "col-span-1 row-span-1",                 // 1: Normal
+    "col-span-1 md:row-span-2",              // 2: Tall
+    "col-span-2 md:col-span-2 row-span-1",   // 3: Wide
+    "col-span-1 row-span-1",                 // 4: Normal
+    "col-span-1 row-span-1",                 // 5: Normal
+    "col-span-2 md:col-span-2 md:row-span-2", // 6: Large
+    "col-span-1 row-span-1",                 // 7: Normal
+    "col-span-1 md:row-span-2",              // 8: Tall
+    "col-span-1 row-span-1",                 // 9: Normal
+    "col-span-2 md:col-span-2 row-span-1",    // 10: Wide
+    "col-span-1 row-span-1",                 // 11: Normal
+    "col-span-1 row-span-1",                 // 12: Normal
+    "col-span-1 md:row-span-2",              // 13: Tall
+    "col-span-2 md:col-span-2 md:row-span-2", // 14: Large
   ];
   return pattern[index % pattern.length];
 };
@@ -55,11 +55,12 @@ function ProductCard({ product, index, spanClass }: { product: typeof products[0
     <motion.div
       layout
       initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
+      whileInView={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.5, delay: (index % 5) * 0.05 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => setIsHovered(!isHovered)}
       className={`group relative overflow-hidden rounded-[2.5rem] cursor-pointer bg-neutral-900 ${spanClass} h-full`}
     >
       <motion.div 
@@ -87,14 +88,14 @@ function ProductCard({ product, index, spanClass }: { product: typeof products[0
       </div>
 
       {/* Content */}
-      <div className="absolute inset-0 p-8 flex flex-col justify-end z-10">
+      <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end z-10">
         <motion.div
           animate={{ y: isHovered ? 0 : 20 }}
           transition={{ duration: 0.5, ease: "circOut" }}
         >
-          <div className="flex justify-between items-end mb-3">
-            <h3 className="text-white font-cormorant-garamond text-3xl md:text-4xl leading-tight max-w-[70%]">{product.name}</h3>
-            <span className="text-white/90 font-medium text-xl">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-1 mb-3">
+            <h3 className="text-white font-cormorant-garamond text-2xl md:text-4xl leading-tight max-w-full md:max-w-[70%]">{product.name}</h3>
+            <span className="text-white/90 font-medium text-lg md:text-xl">
               {product.price}
             </span>
           </div>
@@ -107,15 +108,15 @@ function ProductCard({ product, index, spanClass }: { product: typeof products[0
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <p className="text-white/60 text-sm mb-6 font-light tracking-wide">
+                <p className="text-white/60 text-xs md:text-sm mb-4 md:mb-6 font-light tracking-wide">
                   {product.notes}
                 </p>
                 
                 <div className="flex gap-2">
-                   <Button className="flex-1 bg-white text-black hover:bg-neutral-200 rounded-full py-6 font-semibold uppercase tracking-tighter text-xs">
+                   <Button className={`flex-1 bg-white text-black hover:bg-neutral-200 rounded-full py-4 md:py-6 font-semibold uppercase tracking-tighter text-[10px] md:text-xs transition-all duration-500 ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
                     Quick Add
                   </Button>
-                  <Button variant="outline" className="w-12 h-12 rounded-full border-white/20 bg-white/5 backdrop-blur-sm text-white hover:bg-white/20 p-0">
+                  <Button variant="outline" className={`w-10 h-10 md:w-12 md:h-12 rounded-full border-white/20 bg-white/5 backdrop-blur-sm text-white hover:bg-white/20 p-0 transition-all duration-500 ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
                     +
                   </Button>
                 </div>
@@ -136,26 +137,26 @@ export function ProductGallery() {
   );
 
   return (
-    <section className="w-full py-32 px-4 sm:px-8 lg:px-12 bg-background overflow-hidden">
-      <div className="max-w-7xl mx-auto mb-20">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+    <section className="w-full py-20 md:py-32 px-4 sm:px-8 lg:px-12 bg-background overflow-hidden">
+      <div className="max-w-7xl mx-auto mb-12 md:mb-20">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
           <div className="max-w-2xl">
             <BlurText 
               text="The Scentance Library" 
-              className="font-cormorant-garamond text-6xl md:text-7xl lg:text-8xl font-medium mb-8 text-white leading-[0.9]"
+              className="font-cormorant-garamond text-5xl md:text-7xl lg:text-8xl font-medium mb-6 md:mb-8 text-white leading-[0.9]"
               delay={100}
             />
-            <p className="text-muted-foreground md:text-xl font-light">
+            <p className="text-muted-foreground text-sm md:text-xl font-light">
               Each bottle in our collection represents a unique olfactory narrative, meticulously composed for those who seek the extraordinary.
             </p>
           </div>
           
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-6 py-2 rounded-full text-xs uppercase tracking-widest transition-all duration-300 ${
+                className={`whitespace-nowrap px-6 py-2 rounded-full text-[10px] md:text-xs uppercase tracking-widest transition-all duration-300 ${
                   activeCategory === cat 
                   ? "bg-white text-black font-bold" 
                   : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10"
@@ -170,7 +171,7 @@ export function ProductGallery() {
 
       <motion.div 
         layout
-        className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-[350px] grid-flow-row-dense max-w-[1500px] mx-auto"
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 auto-rows-[250px] md:auto-rows-[350px] grid-flow-row-dense max-w-[1500px] mx-auto"
       >
         <AnimatePresence mode="popLayout">
           {filteredProducts.map((product, index) => (
@@ -184,13 +185,13 @@ export function ProductGallery() {
         </AnimatePresence>
       </motion.div>
       
-      <div className="mt-24 text-center">
+      <div className="mt-16 md:mt-24 text-center">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 1 }}
         >
-           <p className="text-white/30 text-xs uppercase tracking-[0.5em] mb-8">Crafting essence since 1924</p>
+           <p className="text-white/30 text-[10px] md:text-xs uppercase tracking-[0.5em] mb-8">Crafting essence since 1924</p>
            <div className="h-px w-24 bg-white/20 mx-auto" />
         </motion.div>
       </div>
