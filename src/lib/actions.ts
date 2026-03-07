@@ -64,14 +64,24 @@ export async function createOrder(data: {
 export async function updateOrderStatus(orderId: string, status: string) {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  const { data, error } = await supabase
     .from('orders')
     .update({ status })
-    .eq('id', orderId);
+    .eq('id', orderId)
+    .select();
 
   if (error) {
     console.error('Error updating order status:', error);
     return { success: false, error: error.message };
+  }
+
+  if (!data || data.length === 0) {
+    return { success: false, error: 'No order updated (check RLS policies)' };
   }
 
   return { success: true };
@@ -80,14 +90,24 @@ export async function updateOrderStatus(orderId: string, status: string) {
 export async function deleteOrder(orderId: string) {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  const { data, error } = await supabase
     .from('orders')
     .delete()
-    .eq('id', orderId);
+    .eq('id', orderId)
+    .select();
 
   if (error) {
     console.error('Error deleting order:', error);
     return { success: false, error: error.message };
+  }
+
+  if (!data || data.length === 0) {
+    return { success: false, error: 'No order deleted (check RLS policies)' };
   }
 
   return { success: true };
