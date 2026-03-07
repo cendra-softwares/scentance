@@ -1,0 +1,31 @@
+export interface Product {
+  id: number;
+  name: string;
+  category: string;
+  notes: string;
+  price: string;
+  image: string;
+}
+
+export interface OrderItem {
+  id: number;
+  order_id: string;
+  product_id: number;
+  product_name: string;
+  product_price: string;
+  quantity: number;
+}
+
+export interface Order {
+  id: string;
+  customer_name: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  status: string;
+  total_amount: number;
+  created_at: string;
+  order_items?: OrderItem[];
+}

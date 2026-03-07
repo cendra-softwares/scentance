@@ -6,6 +6,7 @@ import { Geist, Geist_Mono, Gayathri } from "next/font/google";
 import "./globals.css";
 import dynamic from "next/dynamic";
 import Footer from "@/components/footer";
+import { CartIcon } from "@/components/cart-icon";
 
 const MeshBackground = dynamic(() => import("@/components/ui/mesh-background"), { ssr: false });
 
@@ -44,6 +45,7 @@ export default function RootLayout({
         <MeshBackground className="fixed inset-0 -z-10" />
         <div className="relative z-10">
           {children}
+          <CartIcon />
         </div>
         <Footer />
       </body>

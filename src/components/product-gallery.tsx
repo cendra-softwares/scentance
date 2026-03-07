@@ -5,18 +5,10 @@ import Image from "next/image";
 import { useState } from "react";
 import BlurText from "./BlurText";
 import { Button } from "./ui/button";
+import { useCart } from "@/lib/store/useCart";
+import { useProducts, Product } from "@/lib/hooks/useProducts";
 
 const categories = ["All", "Original", "7A Master Copy"];
-
-const products = [
-  { id: 1, name: "Giorgio Armani Sì", category: "7A Master Copy", notes: "Blackcurrant, Freesia, May Rose", price: "₹1,900", image: "/images/perfume_gallery_1.jpg" },
-  { id: 2, name: "N°5 Chanel EDP", category: "7A Master Copy", notes: "Aldehydes, Jasmine, Neroli", price: "₹2,600", image: "/images/perfume_gallery_2.jpg" },
-  { id: 3, name: "Ombre Nomade Louis Vuitton", category: "7A Master Copy", notes: "Oud Wood, Benzoin, Raspberry", price: "₹2,800", image: "/images/perfume_gallery_3.jpg" },
-  { id: 4, name: "DIOR SAUVAGE EDP", category: "Original", notes: "Birch Wood, Leather, Smoke", price: "₹2,600", image: "/images/perfume_gallery_4.jpg" },
-  { id: 5, name: "Acqua di Giò Giorgio Armani", category: "Original", notes: "Marine Notes, Bergamot, Cedarwood", price: "₹1,900", image: "/images/perfume_gallery_5.jpg" },
-  { id: 6, name: "Giorgio Armani Sì", category: "Original", notes: "Sea Salt, Sage, Ambrette", price: "₹1,900", image: "/images/perfume_gallery_6.jpg" },
-  { id: 7, name: "Imagination Louis Vuitton", category: "7A Master Copy", notes: "Ambrosia, Citrus, Black Tea", price: "₹2,800", image: "/images/perfume_gallery_7.jpg" }
-];
 
 const getSpanClasses = (index: number) => {
   const pattern = [
@@ -31,8 +23,9 @@ const getSpanClasses = (index: number) => {
   return pattern[index % pattern.length];
 };
 
-function ProductCard({ product, index, spanClass }: { product: typeof products[0], index: number, spanClass: string }) {
+function ProductCard({ product, index, spanClass }: { product: Product, index: number, spanClass: string }) {
   const [isHovered, setIsHovered] = useState(false);
+  const { addItem } = useCart();
 
   return (
     <motion.div
@@ -93,10 +86,23 @@ function ProductCard({ product, index, spanClass }: { product: typeof products[0
                 </p>
                 
                 <div className="flex gap-3">
-                   <Button className="flex-1 bg-white text-black hover:bg-neutral-200 rounded-full py-6 font-bold uppercase tracking-widest text-[10px] transition-transform hover:scale-[1.02] active:scale-[0.98]">
+                   <Button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addItem(product);
+                    }}
+                    className="flex-1 bg-white text-black hover:bg-neutral-200 rounded-full py-6 font-bold uppercase tracking-widest text-[10px] transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                  >
                     Add to Cart
                   </Button>
-                  <Button variant="outline" className="w-14 h-14 rounded-full border-white/10 bg-white/5 backdrop-blur-md text-white hover:bg-white/20 p-0 text-xl">
+                  <Button 
+                    variant="outline" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addItem(product);
+                    }}
+                    className="w-14 h-14 rounded-full border-white/10 bg-white/5 backdrop-blur-md text-white hover:bg-white/20 p-0 text-xl"
+                  >
                     +
                   </Button>
                 </div>
@@ -111,8 +117,9 @@ function ProductCard({ product, index, spanClass }: { product: typeof products[0
 
 export function ProductGallery() {
   const [activeCategory, setActiveCategory] = useState("All");
+  const { products: dbProducts, loading, error } = useProducts();
 
-  const filteredProducts = products.filter(p => 
+  const filteredProducts = dbProducts.filter(p => 
     activeCategory === "All" || p.category === activeCategory
   );
 
@@ -165,17 +172,23 @@ export function ProductGallery() {
 
       <motion.div 
         layout
-        className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-10 auto-rows-[250px] md:auto-rows-[350px] grid-flow-row-dense max-w-[1600px] mx-auto"
+        className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-10 auto-rows-[250px] md:auto-rows-[350px] grid-flow-row-dense max-w-[1600px] mx-auto min-h-[500px]"
       >
         <AnimatePresence mode="popLayout">
-          {filteredProducts.map((product, index) => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-              index={index} 
-              spanClass={getSpanClasses(index)}
-            />
-          ))}
+          {loading ? (
+            <div className="col-span-full flex items-center justify-center py-40">
+              <div className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full animate-spin" />
+            </div>
+          ) : (
+            filteredProducts.map((product, index) => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                index={index} 
+                spanClass={getSpanClasses(index)}
+              />
+            ))
+          )}
         </AnimatePresence>
       </motion.div>
       
