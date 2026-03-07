@@ -20,6 +20,7 @@ export function useProducts() {
   useEffect(() => {
     async function fetchProducts() {
       try {
+        console.log("Fetching products from Supabase...");
         const supabase = createClient();
         const { data, error } = await supabase
           .from("products")
@@ -30,6 +31,7 @@ export function useProducts() {
           console.error("Supabase error fetching products:", error);
           throw error;
         }
+        console.log("Products fetched successfully:", data?.length, "items");
         setProducts(data || []);
       } catch (err: any) {
         console.error("Error fetching products:", err);
