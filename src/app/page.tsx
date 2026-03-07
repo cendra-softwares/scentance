@@ -38,11 +38,13 @@ export default function Home() {
           subtitle="Explore our curated collection of premium fragrances that tell your unique story"
           disableAutoScroll={true}
           images={[
-            { src: "/images/Mock_1.png", alt: "Premium fragrance bottle 1" },
-            { src: "/images/Mock_2.png", alt: "Premium fragrance bottle 2" },
-            { src: "/images/Mock_4.png", alt: "Premium fragrance bottle 3" },
-            { src: "/images/Mock_5.png", alt: "Premium fragrance bottle 4" },
-            { src: "/images/Mock_8.png", alt: "Premium fragrance bottle 5" }
+            { src: "/images/perfume_carousel_1.jpg", alt: "Premium fragrance bottle 1" },
+            { src: "/images/perfume_carousel_2.jpg", alt: "Premium fragrance bottle 2" },
+            { src: "/images/perfume_carousel_3.jpg", alt: "Premium fragrance bottle 3" },
+            { src: "/images/perfume_carousel_4.jpg", alt: "Premium fragrance bottle 4" },
+            { src: "/images/perfume_gallery_6.jpg", alt: "Premium fragrance bottle 5" },
+            { src: "/images/perfume_gallery_3.jpg", alt: "Premium fragrance bottle 6" },
+            { src: "/images/perfume_gallery_7.jpg", alt: "Premium fragrance bottle 7" }
           ]}
         />
       </div>
