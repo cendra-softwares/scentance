@@ -22,7 +22,7 @@ import {
   Printer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { updateOrderStatus, deleteOrder } from "@/lib/actions";
+import { updateOrderStatus, deleteOrder, sendOrderConfirmationEmail } from "@/lib/actions";
 import { createClient } from "@/lib/supabase/client";
 import Papa from "papaparse";
 import { jsPDF } from "jspdf";
@@ -57,6 +57,21 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
     
     return matchesSearch && matchesStatus;
   });
+
+  const handleConfirmOrder = async (orderId: string) => {
+    if (!confirm("Confirm this order? This will send a confirmation email to the customer.")) return;
+    
+    setIsUpdating(orderId);
+    const result = await updateOrderStatus(orderId, "confirmed");
+    if (result.success) {
+      // Send the confirmation email
+      await sendOrderConfirmationEmail(orderId);
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: "confirmed" } : o));
+    } else {
+      alert("Failed to confirm order");
+    }
+    setIsUpdating(null);
+  };
 
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     setIsUpdating(orderId);
@@ -141,7 +156,7 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
   const exportPDF = () => {
     const doc = new jsPDF();
     doc.setFont("helvetica");
-    doc.text("Scentance Orders Report", 14, 15);
+    doc.text("Scentence Orders Report", 14, 15);
     doc.setFontSize(10);
     doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 22);
     
@@ -172,7 +187,7 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
     doc.setTextColor(79, 70, 229); // Indigo-600
-    doc.text("SCENTANCE", 14, 20);
+    doc.text("SCENTENCE", 14, 20);
     
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139); // Slate-500
@@ -418,7 +433,7 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
                       <td className="px-6 py-5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           {order.status === "pending" && (
-                            <button onClick={() => handleUpdateStatus(order.id, "confirmed")} className="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-all" title="Confirm"><CheckCircle size={18} /></button>
+                            <button onClick={() => handleConfirmOrder(order.id)} className="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-all" title="Confirm"><CheckCircle size={18} /></button>
                           )}
                           {order.status === "confirmed" && (
                             <>
@@ -503,7 +518,7 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
 
                     <div className="flex flex-wrap gap-2 pt-1">
                       {order.status === "pending" && (
-                        <Button onClick={() => handleUpdateStatus(order.id, "confirmed")} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11 text-xs font-bold shadow-lg shadow-indigo-500/20">
+                        <Button onClick={() => handleConfirmOrder(order.id)} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11 text-xs font-bold shadow-lg shadow-indigo-500/20">
                           Confirm Order
                         </Button>
                       )}
@@ -549,7 +564,7 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
 
       <footer className="max-w-7xl mx-auto mt-12 mb-8 text-center">
         <div className="inline-block px-4 py-1.5 bg-zinc-200/50 dark:bg-zinc-800 rounded-full">
-          <p className="text-zinc-500 dark:text-zinc-500 text-[9px] uppercase tracking-[0.3em] font-bold">Scentance Archive • Internal Admin Panel</p>
+          <p className="text-zinc-500 dark:text-zinc-500 text-[9px] uppercase tracking-[0.3em] font-bold">Scentence Archive • Internal Admin Panel</p>
         </div>
       </footer>
     </div>

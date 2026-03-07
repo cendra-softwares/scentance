@@ -1,10 +1,16 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { Resend } from 'resend';
+import { OrderReceivedEmail } from '@/components/emails/order-received';
+import { OrderConfirmedEmail } from '@/components/emails/order-confirmed';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function createOrder(data: {
   items: any[];
   customer_name: string;
+  email: string;
   phone: string;
   address: string;
   city: string;
@@ -23,6 +29,7 @@ export async function createOrder(data: {
     .from('orders')
     .insert({
       customer_name: data.customer_name,
+      email: data.email,
       phone: data.phone,
       address: data.address,
       city: data.city,
@@ -54,8 +61,33 @@ export async function createOrder(data: {
 
   if (itemsError) {
     console.error('Error creating order items:', itemsError);
-    // Note: In a production app, you might want to rollback the order creation here
     return { success: false, error: itemsError.message };
+  }
+
+  // 3. Send confirmation email
+  try {
+    await resend.emails.send({
+      from: 'Scentence <orders@scentenceparfum.com>',
+      to: [data.email],
+      subject: `Order Received - ${orderData.id.slice(0, 8).toUpperCase()}`,
+      react: (
+        <OrderReceivedEmail
+          customerName={data.customer_name}
+          orderId={orderData.id}
+          items={data.items}
+          totalAmount={totalAmount}
+          shippingAddress={{
+            address: data.address,
+            city: data.city,
+            state: data.state,
+            pincode: data.pincode,
+          }}
+        />
+      ),
+    });
+  } catch (emailError) {
+    console.error('Error sending confirmation email:', emailError);
+    // We don't return false here because the order was successfully created in the DB
   }
 
   return { success: true, orderId: orderData.id };
@@ -85,6 +117,46 @@ export async function updateOrderStatus(orderId: string, status: string) {
   }
 
   return { success: true };
+}
+
+export async function sendOrderConfirmationEmail(orderId: string) {
+  const supabase = await createClient();
+
+  // Fetch order details with items
+  const { data: order, error } = await supabase
+    .from('orders')
+    .select('*, order_items(*)')
+    .eq('id', orderId)
+    .single();
+
+  if (error || !order || !order.email) {
+    console.error('Error fetching order for confirmation email:', error);
+    return { success: false, error: 'Order not found or email missing' };
+  }
+
+  try {
+    await resend.emails.send({
+      from: 'Scentence <orders@scentenceparfum.com>',
+      to: [order.email],
+      subject: `Order Confirmed - ${order.id.slice(0, 8).toUpperCase()}`,
+      react: (
+        <OrderConfirmedEmail
+          customerName={order.customer_name}
+          orderId={order.id}
+          items={order.order_items.map((item: any) => ({
+            name: item.product_name,
+            quantity: item.quantity,
+            price: item.product_price,
+          }))}
+          totalAmount={order.total_amount}
+        />
+      ),
+    });
+    return { success: true };
+  } catch (emailError) {
+    console.error('Error sending confirmation email:', emailError);
+    return { success: false, error: 'Failed to send email' };
+  }
 }
 
 export async function deleteOrder(orderId: string) {

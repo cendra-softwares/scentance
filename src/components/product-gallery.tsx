@@ -136,7 +136,7 @@ export function ProductGallery() {
             >
               <span className="text-white/30 text-xs uppercase tracking-[0.5em] mb-8 block">Private Collection</span>
               <BlurText 
-                text="The Scentance Library" 
+                text="The Scentence Library" 
                 className="font-cormorant-garamond text-7xl md:text-9xl lg:text-[10rem] font-medium text-white leading-[0.8] mb-12"
                 delay={100}
               />

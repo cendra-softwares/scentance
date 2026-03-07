@@ -19,6 +19,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
     phone: "",
     address: "",
     city: "",
@@ -40,6 +41,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     const result = await createOrder({
       items,
       customer_name: formData.name,
+      email: formData.email,
       phone: formData.phone,
       address: formData.address,
       city: formData.city,
@@ -164,17 +166,30 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-white/40 text-xs uppercase tracking-widest ml-1">Phone Number</label>
+                      <label className="text-white/40 text-xs uppercase tracking-widest ml-1">Email Address</label>
                       <input 
                         required 
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
+                        type="email"
+                        name="email"
+                        value={formData.email}
                         onChange={handleInputChange}
-                        placeholder="Ex: +91 98765 43210"
+                        placeholder="Ex: john@example.com"
                         className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-white/40 text-xs uppercase tracking-widest ml-1">Phone Number</label>
+                    <input 
+                      required 
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="Ex: +91 98765 43210"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -256,7 +271,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     </div>
 
                     <p className="text-white/40 font-light text-sm max-w-xs mx-auto">
-                      Thank you for choosing Scentance.
+                      Thank you for choosing Scentence.
                     </p>
                   </div>
                   <Button 
