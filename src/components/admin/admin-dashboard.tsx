@@ -18,21 +18,19 @@ import {
   Filter,
   MoreVertical,
   RotateCcw,
-  Undo
+  Undo,
+  Printer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { updateOrderStatus, deleteOrder } from "@/lib/actions";
 import { createClient } from "@/lib/supabase/client";
 import Papa from "papaparse";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import { applyPlugin } from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
-declare module "jspdf" {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
+// Initialize the plugin
+applyPlugin(jsPDF);
 
 interface AdminDashboardProps {
   initialOrders: Order[];
@@ -149,13 +147,13 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
     
     const tableData = filteredOrders.map(o => [
       new Date(o.created_at).toLocaleDateString(),
-      o.customer_name,
-      o.order_items?.map(i => `${i.product_name} (x${i.quantity})`).join(", "),
-      `₹${o.total_amount.toLocaleString()}`,
-      o.status
+      o.customer_name || 'N/A',
+      (o.order_items || []).map(i => `${i.product_name} (x${i.quantity})`).join(", ") || 'No items',
+      `₹${(o.total_amount || 0).toLocaleString()}`,
+      o.status || 'pending'
     ]);
 
-    doc.autoTable({
+    (doc as any).autoTable({
       startY: 30,
       head: [['Date', 'Customer', 'Items', 'Total', 'Status']],
       body: tableData,
@@ -165,6 +163,92 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
     });
 
     doc.save(`orders_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  const exportShippingPDF = (order: Order) => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(79, 70, 229); // Indigo-600
+    doc.text("SCENTANCE", 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // Slate-500
+    doc.setFont("helvetica", "normal");
+    doc.text("SHIPPING DETAILS", 14, 26);
+    
+    // Order Info Box
+    doc.setDrawColor(226, 232, 240); // Slate-200
+    doc.setFillColor(248, 250, 252); // Slate-50
+    doc.roundedRect(14, 35, 182, 25, 2, 2, "FD");
+    
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(51, 65, 85); // Slate-800
+    doc.text("Order ID:", 20, 45);
+    doc.text("Date:", 20, 52);
+    
+    doc.setFont("helvetica", "normal");
+    doc.text(`#${order.id.toUpperCase()}`, 45, 45);
+    doc.text(new Date(order.created_at).toLocaleString(), 45, 52);
+
+    // Shipping To Section
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(30, 41, 59); // Slate-900
+    doc.text("SHIP TO:", 14, 75);
+    
+    doc.setLineWidth(0.5);
+    doc.line(14, 78, 196, 78);
+
+    doc.setFontSize(11);
+    doc.text(order.customer_name, 14, 88);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(71, 85, 105); // Slate-600
+    
+    // Split address if too long
+    const addressLines = doc.splitTextToSize(order.address || '', 100);
+    doc.text(addressLines, 14, 95);
+    
+    const nextY = 95 + (addressLines.length * 5);
+    doc.text(`${order.city}, ${order.state} - ${order.pincode}`, 14, nextY);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Phone: ${order.phone}`, 14, nextY + 7);
+
+    // Items Table
+    doc.setFontSize(12);
+    doc.setTextColor(30, 41, 59);
+    doc.text("PACKAGE CONTENTS:", 14, nextY + 25);
+    
+    const itemData = (order.order_items || []).map(item => [
+      item.product_name || 'N/A',
+      `x ${item.quantity || 1}`
+    ]);
+
+    (doc as any).autoTable({
+      startY: nextY + 30,
+      head: [['Product Description', 'Quantity']],
+      body: itemData,
+      theme: 'striped',
+      headStyles: { fillColor: [51, 65, 85], textColor: 255, fontStyle: 'bold' },
+      bodyStyles: { textColor: 51 },
+      columnStyles: {
+        0: { cellWidth: 140 },
+        1: { cellWidth: 42, halign: 'center' }
+      }
+    });
+
+    // Footer / Instructions
+    const finalY = (doc as any).lastAutoTable?.cursor?.y || (nextY + 80);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(148, 163, 184); // Slate-400
+    doc.text("Please handle with care. Fragile items inside.", 14, finalY);
+    
+    doc.save(`shipping_${order.customer_name.replace(/\s+/g, '_')}_${order.id.slice(0,8)}.pdf`);
   };
 
   const statusColors: Record<string, string> = {
@@ -351,6 +435,13 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
                           {order.status !== "cancelled" && (
                             <button onClick={() => handleUpdateStatus(order.id, "cancelled")} className="p-2 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all" title="Cancel"><Clock size={18} /></button>
                           )}
+                          <button 
+                            onClick={() => exportShippingPDF(order)} 
+                            className="p-2 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all" 
+                            title="Print Shipping PDF"
+                          >
+                            <Printer size={18} />
+                          </button>
                           <button onClick={() => handleDeleteOrder(order.id)} className="p-2 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all" title="Delete"><Trash2 size={18} /></button>
                         </div>
                       </td>
@@ -441,6 +532,9 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
                           Cancel
                         </Button>
                       )}
+                      <Button onClick={() => exportShippingPDF(order)} variant="outline" className="flex-1 border-indigo-200 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-xl h-11 text-xs font-bold shadow-sm shadow-indigo-500/5 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-all">
+                        <Printer size={16} className="mr-2" /> Shipping Label
+                      </Button>
                       <Button onClick={() => handleDeleteOrder(order.id)} variant="ghost" className="w-11 h-11 p-0 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl shrink-0">
                         <Trash2 size={20} />
                       </Button>
