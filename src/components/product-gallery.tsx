@@ -2,100 +2,80 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import BlurText from "./BlurText";
 import { Button } from "./ui/button";
 
-const categories = ["All", "Floral", "Woody", "Oriental", "Fresh"];
+const categories = ["All", "Original", "7A Master Copy"];
 
 const products = [
-  { id: 1, name: "Lumière Noire", category: "Floral", notes: "Rose, Patchouli, Saffron", price: "$180", image: "/images/Mock_1.png" },
-  { id: 2, name: "Oud Saphir", category: "Woody", notes: "Bergamot, Oud, Leather", price: "$210", image: "/images/Mock_2.png" },
-  { id: 3, name: "Santal Vénitien", category: "Woody", notes: "Sandalwood, Cardamom", price: "$165", image: "/images/Mock_4.png" },
-  { id: 4, name: "Figue Blanche", category: "Fresh", notes: "Fig, Jasmine, Cedar", price: "$140", image: "/images/Mock_5.png" },
-  { id: 5, name: "Nuit Désert", category: "Oriental", notes: "Incense, Amber, Vanilla", price: "$195", image: "/images/Mock_8.png" },
-  { id: 6, name: "Ambre Stella", category: "Oriental", notes: "Amber, Labdanum, Vanilla", price: "$175", image: "/images/Mock_1.png" },
-  { id: 7, name: "Iris Céleste", category: "Floral", notes: "Iris, Violet, Musk", price: "$150", image: "/images/Mock_2.png" },
-  { id: 8, name: "Vetiver Zeste", category: "Fresh", notes: "Vetiver, Grapefruit", price: "$130", image: "/images/Mock_4.png" },
-  { id: 9, name: "Cèdre Atlas", category: "Woody", notes: "Cedarwood, Lemon, Jasmine", price: "$160", image: "/images/Mock_5.png" },
-  { id: 10, name: "Vanille Antique", category: "Oriental", notes: "Vanilla, Cashmere, Musk", price: "$200", image: "/images/Mock_8.png" },
-  { id: 11, name: "Rose Épicée", category: "Floral", notes: "Rose, Pink Pepper, Amber", price: "$185", image: "/images/Mock_1.png" },
-  { id: 12, name: "Bergamote Soleil", category: "Fresh", notes: "Bergamot, Lavender, Oakmoss", price: "$145", image: "/images/Mock_2.png" },
-  { id: 13, name: "Cuir Noir", category: "Woody", notes: "Leather, Tobacco, Tonka", price: "$220", image: "/images/Mock_4.png" },
-  { id: 14, name: "Fleur de Lys", category: "Floral", notes: "Lily, Jasmine, Tuberose", price: "$170", image: "/images/Mock_5.png" },
-  { id: 15, name: "Ébène Fumée", category: "Woody", notes: "Ebony Wood, Incense", price: "$250", image: "/images/Mock_8.png" }
+  { id: 1, name: "Giorgio Armani Sì", category: "7A Master Copy", notes: "Blackcurrant, Freesia, May Rose", price: "₹1,900", image: "/images/IMG_4432.JPG.jpeg" },
+  { id: 2, name: "N°5 Chanel EDP", category: "7A Master Copy", notes: "Aldehydes, Jasmine, Neroli", price: "₹2,600", image: "/images/IMG_4425.JPG.jpeg" },
+  { id: 3, name: "Ombre Nomade Louis Vuitton", category: "7A Master Copy", notes: "Oud Wood, Benzoin, Raspberry", price: "₹2,800", image: "/images/IMG_4428.JPG.jpeg" },
+  { id: 4, name: "Silver Birch", category: "Original", notes: "Birch Wood, Leather, Smoke", price: "₹2,600", image: "/images/IMG_4427.JPG.jpeg" },
+  { id: 5, name: "Acqua di Giò Giorgio Armani", category: "Original", notes: "Marine Notes, Bergamot, Cedarwood", price: "₹1,900", image: "/images/IMG_4429.JPG.jpeg" },
+  { id: 6, name: "Azure Breeze", category: "Original", notes: "Sea Salt, Sage, Ambrette", price: "₹2,600", image: "/images/IMG_4430.JPG.jpeg" },
+  { id: 7, name: "Imagination Louis Vuitton", category: "7A Master Copy", notes: "Ambrosia, Citrus, Black Tea", price: "₹2,800", image: "/images/IMG_4433.JPG.jpeg" }
 ];
 
 const getSpanClasses = (index: number) => {
   const pattern = [
-    "col-span-2 md:col-span-2 md:row-span-2", // 0: Large
-    "col-span-1 row-span-1",                 // 1: Normal
-    "col-span-1 md:row-span-2",              // 2: Tall
-    "col-span-2 md:col-span-2 row-span-1",   // 3: Wide
-    "col-span-1 row-span-1",                 // 4: Normal
-    "col-span-1 row-span-1",                 // 5: Normal
+    "col-span-2 md:col-span-2 md:row-span-2", // 0: Large Feature
+    "col-span-1 md:col-span-1 md:row-span-1", // 1: Small
+    "col-span-1 md:col-span-1 md:row-span-2", // 2: Tall
+    "col-span-2 md:col-span-2 md:row-span-1", // 3: Wide
+    "col-span-1 md:col-span-1 md:row-span-1", // 4: Small
+    "col-span-1 md:col-span-1 md:row-span-2", // 5: Tall
     "col-span-2 md:col-span-2 md:row-span-2", // 6: Large
-    "col-span-1 row-span-1",                 // 7: Normal
-    "col-span-1 md:row-span-2",              // 8: Tall
-    "col-span-1 row-span-1",                 // 9: Normal
-    "col-span-2 md:col-span-2 row-span-1",    // 10: Wide
-    "col-span-1 row-span-1",                 // 11: Normal
-    "col-span-1 row-span-1",                 // 12: Normal
-    "col-span-1 md:row-span-2",              // 13: Tall
-    "col-span-2 md:col-span-2 md:row-span-2", // 14: Large
   ];
   return pattern[index % pattern.length];
 };
 
 function ProductCard({ product, index, spanClass }: { product: typeof products[0], index: number, spanClass: string }) {
   const [isHovered, setIsHovered] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.9 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.5, delay: (index % 5) * 0.05 }}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.6, delay: (index % 4) * 0.1 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => setIsHovered(!isHovered)}
-      className={`group relative overflow-hidden rounded-[2.5rem] cursor-pointer bg-neutral-900 ${spanClass} h-full`}
+      className={`group relative overflow-hidden rounded-[2rem] md:rounded-[3rem] cursor-pointer bg-neutral-900 ${spanClass} h-full`}
     >
       <motion.div 
         className="absolute inset-0 z-0"
-        animate={{ scale: isHovered ? 1.05 : 1 }}
-        transition={{ duration: 0.7, ease: "easeOut" }}
+        animate={{ scale: isHovered ? 1.1 : 1 }}
+        transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
       >
         <Image 
           src={product.image} 
           alt={product.name} 
           fill 
           sizes="(max-width: 768px) 100vw, 50vw"
-          className="object-cover transition-opacity duration-500 group-hover:opacity-80" 
+          className="object-cover transition-opacity duration-700 group-hover:opacity-70" 
         />
       </motion.div>
       
-      {/* Dynamic Gradient Overlay */}
-      <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-500 ${isHovered ? 'opacity-90' : 'opacity-60'}`} />
+      <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-500 ${isHovered ? 'opacity-100' : 'opacity-70'}`} />
 
-      {/* Product Category Tag */}
       <div className="absolute top-6 left-6 z-10">
-        <span className="px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-[10px] uppercase tracking-widest text-white/90 font-medium">
+        <span className="px-4 py-1.5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-full text-[9px] uppercase tracking-[0.2em] text-white font-medium">
           {product.category}
         </span>
       </div>
 
-      {/* Content */}
-      <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end z-10">
+      <div className="absolute inset-0 p-6 md:p-10 flex flex-col justify-end z-10">
         <motion.div
-          animate={{ y: isHovered ? 0 : 20 }}
-          transition={{ duration: 0.5, ease: "circOut" }}
+          animate={{ y: isHovered ? 0 : 15 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
         >
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-1 mb-3">
-            <h3 className="text-white font-cormorant-garamond text-2xl md:text-4xl leading-tight max-w-full md:max-w-[70%]">{product.name}</h3>
-            <span className="text-white/90 font-medium text-lg md:text-xl">
+          <div className="flex flex-col gap-1 mb-4">
+            <h3 className="text-white font-cormorant-garamond text-3xl md:text-5xl leading-[1]">{product.name}</h3>
+            <span className="text-white/80 font-light text-lg md:text-2xl mt-1">
               {product.price}
             </span>
           </div>
@@ -103,20 +83,20 @@ function ProductCard({ product, index, spanClass }: { product: typeof products[0
           <AnimatePresence>
             {isHovered && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.4 }}
               >
-                <p className="text-white/60 text-xs md:text-sm mb-4 md:mb-6 font-light tracking-wide">
+                <p className="text-white/50 text-xs md:text-sm mb-8 font-light tracking-wide max-w-[90%]">
                   {product.notes}
                 </p>
                 
-                <div className="flex gap-2">
-                   <Button className={`flex-1 bg-white text-black hover:bg-neutral-200 rounded-full py-4 md:py-6 font-semibold uppercase tracking-tighter text-[10px] md:text-xs transition-all duration-500 ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
-                    Quick Add
+                <div className="flex gap-3">
+                   <Button className="flex-1 bg-white text-black hover:bg-neutral-200 rounded-full py-6 font-bold uppercase tracking-widest text-[10px] transition-transform hover:scale-[1.02] active:scale-[0.98]">
+                    Add to Cart
                   </Button>
-                  <Button variant="outline" className={`w-10 h-10 md:w-12 md:h-12 rounded-full border-white/20 bg-white/5 backdrop-blur-sm text-white hover:bg-white/20 p-0 transition-all duration-500 ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
+                  <Button variant="outline" className="w-14 h-14 rounded-full border-white/10 bg-white/5 backdrop-blur-md text-white hover:bg-white/20 p-0 text-xl">
                     +
                   </Button>
                 </div>
@@ -137,29 +117,43 @@ export function ProductGallery() {
   );
 
   return (
-    <section className="w-full py-20 md:py-32 px-4 sm:px-8 lg:px-12 bg-background overflow-hidden">
-      <div className="max-w-7xl mx-auto mb-12 md:mb-20">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
-          <div className="max-w-2xl">
-            <BlurText 
-              text="The Scentance Library" 
-              className="font-cormorant-garamond text-5xl md:text-7xl lg:text-8xl font-medium mb-6 md:mb-8 text-white leading-[0.9]"
-              delay={100}
-            />
-            <p className="text-muted-foreground text-sm md:text-xl font-light">
-              Each bottle in our collection represents a unique olfactory narrative, meticulously composed for those who seek the extraordinary.
-            </p>
+    <section className="w-full py-24 md:py-48 px-6 sm:px-12 lg:px-24 bg-black overflow-hidden">
+      <div className="max-w-[1600px] mx-auto mb-20 md:mb-32">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
+          <div className="max-w-4xl">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+            >
+              <span className="text-white/30 text-xs uppercase tracking-[0.5em] mb-8 block">Private Collection</span>
+              <BlurText 
+                text="The Scentance Library" 
+                className="font-cormorant-garamond text-7xl md:text-9xl lg:text-[10rem] font-medium text-white leading-[0.8] mb-12"
+                delay={100}
+              />
+            </motion.div>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.2, delay: 0.5 }}
+              className="text-white/40 text-lg md:text-2xl font-light leading-relaxed max-w-2xl"
+            >
+              Discover a meticulously curated archive of essence. From avant-garde originals to timeless master compositions.
+            </motion.p>
           </div>
           
-          <div className="flex flex-wrap gap-2 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
+          <div className="flex flex-wrap gap-4">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`whitespace-nowrap px-6 py-2 rounded-full text-[10px] md:text-xs uppercase tracking-widest transition-all duration-300 ${
+                className={`px-10 py-4 rounded-full text-[10px] uppercase tracking-[0.3em] transition-all duration-700 border ${
                   activeCategory === cat 
-                  ? "bg-white text-black font-bold" 
-                  : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10"
+                  ? "bg-white text-black border-white scale-105 shadow-[0_0_30px_rgba(255,255,255,0.2)]" 
+                  : "bg-transparent text-white/30 border-white/5 hover:border-white/20 hover:text-white"
                 }`}
               >
                 {cat}
@@ -171,7 +165,7 @@ export function ProductGallery() {
 
       <motion.div 
         layout
-        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 auto-rows-[250px] md:auto-rows-[350px] grid-flow-row-dense max-w-[1500px] mx-auto"
+        className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-10 auto-rows-[250px] md:auto-rows-[350px] grid-flow-row-dense max-w-[1600px] mx-auto"
       >
         <AnimatePresence mode="popLayout">
           {filteredProducts.map((product, index) => (
@@ -185,14 +179,15 @@ export function ProductGallery() {
         </AnimatePresence>
       </motion.div>
       
-      <div className="mt-16 md:mt-24 text-center">
+      <div className="mt-32 md:mt-48 text-center">
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 1 }}
         >
-           <p className="text-white/30 text-[10px] md:text-xs uppercase tracking-[0.5em] mb-8">Crafting essence since 1924</p>
-           <div className="h-px w-24 bg-white/20 mx-auto" />
+           <p className="text-white/20 text-[10px] md:text-xs uppercase tracking-[0.8em] mb-12">Archives of Essence • Est. 1924</p>
+           <div className="h-px w-32 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto" />
         </motion.div>
       </div>
     </section>
