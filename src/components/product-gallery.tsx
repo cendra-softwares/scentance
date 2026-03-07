@@ -12,9 +12,9 @@ const products = [
   { id: 1, name: "Giorgio Armani Sì", category: "7A Master Copy", notes: "Blackcurrant, Freesia, May Rose", price: "₹1,900", image: "/images/perfume_gallery_1.jpg" },
   { id: 2, name: "N°5 Chanel EDP", category: "7A Master Copy", notes: "Aldehydes, Jasmine, Neroli", price: "₹2,600", image: "/images/perfume_gallery_2.jpg" },
   { id: 3, name: "Ombre Nomade Louis Vuitton", category: "7A Master Copy", notes: "Oud Wood, Benzoin, Raspberry", price: "₹2,800", image: "/images/perfume_gallery_3.jpg" },
-  { id: 4, name: "Silver Birch", category: "Original", notes: "Birch Wood, Leather, Smoke", price: "₹2,600", image: "/images/perfume_gallery_4.jpg" },
+  { id: 4, name: "DIOR SAUVAGE EDP", category: "Original", notes: "Birch Wood, Leather, Smoke", price: "₹2,600", image: "/images/perfume_gallery_4.jpg" },
   { id: 5, name: "Acqua di Giò Giorgio Armani", category: "Original", notes: "Marine Notes, Bergamot, Cedarwood", price: "₹1,900", image: "/images/perfume_gallery_5.jpg" },
-  { id: 6, name: "Azure Breeze", category: "Original", notes: "Sea Salt, Sage, Ambrette", price: "₹2,600", image: "/images/perfume_gallery_6.jpg" },
+  { id: 6, name: "Giorgio Armani Sì", category: "Original", notes: "Sea Salt, Sage, Ambrette", price: "₹1,900", image: "/images/perfume_gallery_6.jpg" },
   { id: 7, name: "Imagination Louis Vuitton", category: "7A Master Copy", notes: "Ambrosia, Citrus, Black Tea", price: "₹2,800", image: "/images/perfume_gallery_7.jpg" }
 ];
 
