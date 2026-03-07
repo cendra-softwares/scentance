@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { HeroSection } from "@/components/hero-section";
-import BottleScrollSection from "@/components/bottle-scroll-section";
 
 export default function Home() {
   return (
@@ -31,8 +30,6 @@ export default function Home() {
           &ldquo;Scent woven into essence.&rdquo;
         </motion.blockquote>
       </motion.main>
-
-      <BottleScrollSection />
 
       <div className="py-24 px-4 sm:px-8 lg:px-20">
         <HeroSection
