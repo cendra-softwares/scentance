@@ -2,6 +2,8 @@
 
 > A premium fragrance e-commerce platform featuring a meticulously curated archive of essence, avant-garde originals, and timeless master compositions.
 
+**Live Demo:** [scentenceparfum.com](https://www.scentenceparfum.com/)
+
 Scentence is a modern digital flagship for premium perfumery. It combines a sophisticated, minimal aesthetic with robust e-commerce functionality, providing a seamless journey from olfactory discovery to secure checkout and order management.
 
 ---
