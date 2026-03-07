@@ -19,11 +19,13 @@ import {
   MoreVertical,
   RotateCcw,
   Undo,
-  Printer
+  Printer,
+  ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { updateOrderStatus, deleteOrder, sendOrderConfirmationEmail } from "@/lib/actions";
 import { createClient } from "@/lib/supabase/client";
+import { motion, AnimatePresence } from "framer-motion";
 import Papa from "papaparse";
 import { jsPDF } from "jspdf";
 import { applyPlugin } from "jspdf-autotable";
@@ -40,8 +42,148 @@ interface AdminDashboardProps {
 export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps) {
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterStatus, setFilterStatus] = useState<string[]>(["all"]);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const [exportScope, setExportScope] = useState<"current" | "all" | "confirmed">("current");
+
+  // Custom Dropdown Component
+  const CustomDropdown = ({ 
+    value, 
+    onChange, 
+    options, 
+    icon: Icon, 
+    label,
+    className = "",
+    multiple = false
+  }: { 
+    value: any; 
+    onChange: (val: any) => void; 
+    options: { label: string; value: any }[]; 
+    icon?: any;
+    label?: string;
+    className?: string;
+    multiple?: boolean;
+  }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    
+    const handleSelect = (optionValue: any) => {
+      if (!multiple) {
+        onChange(optionValue);
+        setIsOpen(false);
+        return;
+      }
+
+      // Multi-select logic
+      if (optionValue === "all") {
+        onChange(["all"]);
+        return;
+      }
+
+      const newValue = Array.isArray(value) ? [...value] : [];
+      const allIndex = newValue.indexOf("all");
+      if (allIndex > -1) newValue.splice(allIndex, 1);
+
+      const index = newValue.indexOf(optionValue);
+      if (index > -1) {
+        newValue.splice(index, 1);
+      } else {
+        newValue.push(optionValue);
+      }
+
+      if (newValue.length === 0) {
+        onChange(["all"]);
+      } else {
+        onChange(newValue);
+      }
+    };
+
+    const isSelected = (optionValue: any) => {
+      if (multiple && Array.isArray(value)) {
+        return value.includes(optionValue);
+      }
+      return value === optionValue;
+    };
+
+    const getDisplayLabel = () => {
+      if (multiple && Array.isArray(value)) {
+        if (value.includes("all")) return "All Status";
+        if (value.length === 1) return options.find(o => o.value === value[0])?.label || label;
+        return `${value.length} Statuses Selected`;
+      }
+      return options.find(o => o.value === value)?.label || label;
+    };
+
+    return (
+      <div className={`relative ${className}`}>
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm min-w-[160px] justify-between group h-11"
+        >
+          <div className="flex items-center gap-2.5">
+            {Icon && <Icon className="w-4 h-4 text-zinc-400 group-hover:text-indigo-500 transition-colors" />}
+            <span className="text-zinc-600 dark:text-zinc-300 font-bold uppercase tracking-widest text-[10px] truncate">
+              {getDisplayLabel()}
+            </span>
+          </div>
+          <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-500 ease-in-out ${isOpen ? 'rotate-180 text-indigo-500' : ''}`} />
+        </button>
+
+        <AnimatePresence>
+          {isOpen && (
+            <>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[60]" 
+                onClick={() => setIsOpen(false)} 
+              />
+              <motion.div
+                initial={{ opacity: 0, y: 12, scale: 0.95, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: 12, scale: 0.95, filter: "blur(4px)" }}
+                transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                className="absolute top-full mt-2 left-0 right-0 bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl z-[70] overflow-hidden py-2 min-w-[200px]"
+              >
+                {options.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleSelect(option.value)}
+                    className={`w-full text-left px-5 py-3 text-[10px] uppercase tracking-widest transition-all ${
+                      isSelected(option.value)
+                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/5 font-black' 
+                      : 'text-zinc-50 dark:text-zinc-400 font-bold hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {multiple && (
+                          <div className={`w-3 h-3 rounded border flex items-center justify-center transition-colors ${
+                            isSelected(option.value) 
+                            ? 'bg-indigo-500 border-indigo-500' 
+                            : 'border-zinc-300 dark:border-zinc-600'
+                          }`}>
+                            {isSelected(option.value) && <CheckCircle size={8} className="text-white" />}
+                          </div>
+                        )}
+                        {option.label}
+                      </div>
+                      {!multiple && isSelected(option.value) && (
+                        <motion.div layoutId="active-indicator" className="w-1 h-1 rounded-full bg-indigo-500" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  };
+
 
   const filteredOrders = orders.filter(order => {
     const orderIdShort = order.id.slice(0, 8).toLowerCase();
@@ -52,8 +194,8 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
       order.order_items?.some(item => item.product_name.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = 
-      filterStatus === "all" || 
-      (filterStatus === "confirmed" ? (order.status === "confirmed" || order.status === "shipped") : order.status === filterStatus);
+      filterStatus.includes("all") || 
+      filterStatus.includes(order.status);
     
     return matchesSearch && matchesStatus;
   });
@@ -103,8 +245,15 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
     window.location.href = "/login";
   };
 
+  const getOrdersToExport = () => {
+    if (exportScope === "all") return orders;
+    if (exportScope === "confirmed") return orders.filter(o => o.status === "confirmed");
+    return filteredOrders;
+  };
+
   const exportCSV = () => {
-    const data = filteredOrders.flatMap(o => 
+    const dataToExport = getOrdersToExport();
+    const data = dataToExport.flatMap(o => 
       o.order_items?.map(item => ({
         OrderID: o.id,
         Date: new Date(o.created_at).toLocaleDateString(),
@@ -124,7 +273,7 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", `orders_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `orders_${exportScope}_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -132,7 +281,8 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
   };
 
   const exportExcel = () => {
-    const data = filteredOrders.flatMap(o => 
+    const dataToExport = getOrdersToExport();
+    const data = dataToExport.flatMap(o => 
       o.order_items?.map(item => ({
         OrderID: o.id,
         Date: new Date(o.created_at).toLocaleDateString(),
@@ -150,17 +300,18 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
-    XLSX.writeFile(workbook, `orders_${new Date().toISOString().split('T')[0]}.xlsx`);
+    XLSX.writeFile(workbook, `orders_${exportScope}_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   const exportPDF = () => {
+    const dataToExport = getOrdersToExport();
     const doc = new jsPDF();
     doc.setFont("helvetica");
     doc.text("Scentence Orders Report", 14, 15);
     doc.setFontSize(10);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 22);
+    doc.text(`Generated on: ${new Date().toLocaleString()} (${exportScope} view)`, 14, 22);
     
-    const tableData = filteredOrders.map(o => [
+    const tableData = dataToExport.map(o => [
       new Date(o.created_at).toLocaleDateString(),
       o.customer_name || 'N/A',
       (o.order_items || []).map(i => `${i.product_name} (x${i.quantity})`).join(", ") || 'No items',
@@ -177,7 +328,7 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
       headStyles: { fillColor: [51, 65, 85] }
     });
 
-    doc.save(`orders_${new Date().toISOString().split('T')[0]}.pdf`);
+    doc.save(`orders_${exportScope}_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   const exportShippingPDF = (order: Order) => {
@@ -303,9 +454,9 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Total Orders", value: orders.length, icon: Package, color: "text-zinc-900 dark:text-white", status: "all" },
-            { label: "Pending", value: orders.filter(o => o.status === "pending").length, icon: Clock, color: "text-orange-600", status: "pending" },
-            { label: "Confirmed", value: orders.filter(o => o.status === "confirmed" || o.status === "shipped").length, icon: CheckCircle, color: "text-emerald-600", status: "confirmed" },
+            { label: "Total Orders", value: orders.length, icon: Package, color: "text-zinc-900 dark:text-white", status: ["all"] },
+            { label: "Pending", value: orders.filter(o => o.status === "pending").length, icon: Clock, color: "text-orange-600", status: ["pending"] },
+            { label: "Confirmed", value: orders.filter(o => o.status === "confirmed").length, icon: CheckCircle, color: "text-emerald-600", status: ["confirmed"] },
             { 
               label: "Confirmed Revenue", 
               value: `₹${orders
@@ -314,14 +465,14 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
                 .toLocaleString()}`, 
               icon: LayoutDashboard, 
               color: "text-indigo-600",
-              status: "all"
+              status: ["all"]
             }
           ].map((stat, i) => (
             <button 
               key={i} 
               onClick={() => setFilterStatus(stat.status)}
               className={`bg-white dark:bg-zinc-900 border rounded-2xl p-4 md:p-6 shadow-sm text-left transition-all hover:ring-2 hover:ring-indigo-500/20 ${
-                filterStatus === stat.status ? 'ring-2 ring-indigo-500 border-indigo-500/30' : 'border-zinc-200 dark:border-zinc-800'
+                JSON.stringify(filterStatus) === JSON.stringify(stat.status) ? 'ring-2 ring-indigo-500 border-indigo-500/30' : 'border-zinc-200 dark:border-zinc-800'
               }`}
             >
               <div className="flex justify-between items-start mb-2">
@@ -342,30 +493,42 @@ export function AdminDashboard({ initialOrders, userEmail }: AdminDashboardProps
               placeholder="Search by customer, phone, or product..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
+              className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-11 pr-4 h-11 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
             />
           </div>
           
-          <div className="flex gap-2">
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
-              <select 
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-3 text-sm focus:outline-none focus:border-indigo-500 cursor-pointer shadow-sm appearance-none min-w-[140px]"
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="shipped">Shipped</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <CustomDropdown
+              value={filterStatus}
+              onChange={setFilterStatus}
+              icon={Filter}
+              multiple={true}
+              options={[
+                { label: "All Status", value: "all" },
+                { label: "Pending", value: "pending" },
+                { label: "Confirmed", value: "confirmed" },
+                { label: "Shipped", value: "shipped" },
+                { label: "Cancelled", value: "cancelled" },
+              ]}
+            />
 
-            <div className="flex bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-1 shadow-sm">
-              <button onClick={exportCSV} title="Export CSV" className="p-2.5 text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-all"><TableIcon size={18} /></button>
-              <button onClick={exportExcel} title="Export Excel" className="p-2.5 text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-all"><Download size={18} /></button>
-              <button onClick={exportPDF} title="Export PDF" className="p-2.5 text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-all"><FileText size={18} /></button>
+            <div className="flex items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-1.5 shadow-sm h-11">
+              <CustomDropdown
+                value={exportScope}
+                onChange={setExportScope}
+                className="[&>button]:border-none [&>button]:shadow-none [&>button]:bg-transparent [&>button]:min-w-[150px]"
+                options={[
+                  { label: "Current View", value: "current" },
+                  { label: "All Orders", value: "all" },
+                  { label: "Confirmed Only", value: "confirmed" },
+                ]}
+              />
+              <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800 mx-2" />
+              <div className="flex items-center gap-1 pr-1">
+                <button onClick={exportCSV} title="Export CSV" className="p-2 text-zinc-400 hover:text-indigo-500 hover:bg-zinc-100 dark:hover:bg-white/5 rounded-lg transition-all"><TableIcon size={16} /></button>
+                <button onClick={exportExcel} title="Export Excel" className="p-2 text-zinc-400 hover:text-emerald-500 hover:bg-zinc-100 dark:hover:bg-white/5 rounded-lg transition-all"><Download size={16} /></button>
+                <button onClick={exportPDF} title="Export PDF" className="p-2 text-zinc-400 hover:text-rose-500 hover:bg-zinc-100 dark:hover:bg-white/5 rounded-lg transition-all"><FileText size={16} /></button>
+              </div>
             </div>
           </div>
         </div>
