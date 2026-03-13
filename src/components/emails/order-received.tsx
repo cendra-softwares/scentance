@@ -86,7 +86,10 @@ export const OrderReceivedEmail: React.FC<Readonly<OrderReceivedEmailProps>> = (
         }}>
           <div>
             <p style={{ margin: '0', fontSize: '16px' }}>{item.name}</p>
-            <p style={{ margin: '0', fontSize: '12px', color: '#71717a' }}>Qty: {item.quantity}</p>
+            <p style={{ margin: '0', fontSize: '12px', color: '#71717a' }}>
+              Qty: {item.quantity} 
+              {item.volume && ` • ${item.volume}`}
+            </p>
           </div>
           <p style={{ margin: '0', fontSize: '16px' }}>{item.price}</p>
         </div>

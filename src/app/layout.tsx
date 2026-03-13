@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import { Geist, Geist_Mono, Gayathri } from "next/font/google";
 import "./globals.css";
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 import Footer from "@/components/footer";
 import { CartIcon } from "@/components/cart-icon";
 
@@ -37,6 +38,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isDashboard = pathname?.startsWith("/dashboard") || pathname === "/login";
+
   return (
     <html lang="en">
       <head>
@@ -53,9 +57,9 @@ export default function RootLayout({
         <MeshBackground className="fixed inset-0 -z-10" />
         <div className="relative z-10">
           {children}
-          <CartIcon />
+          {!isDashboard && <CartIcon />}
         </div>
-        <Footer />
+        {!isDashboard && <Footer />}
       </body>
     </html>
   );

@@ -4,6 +4,7 @@ export interface Product {
   category: string;
   notes: string;
   price: string;
+  volume: string | null;
   image: string;
 }
 
@@ -13,6 +14,7 @@ export interface OrderItem {
   product_id: number;
   product_name: string;
   product_price: string;
+  volume?: string | null;
   quantity: number;
 }
 

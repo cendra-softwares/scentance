@@ -52,6 +52,7 @@ export async function createOrder(data: {
     product_id: item.id,
     product_name: item.name,
     product_price: item.price,
+    volume: item.volume,
     quantity: item.quantity,
   }));
 
@@ -180,6 +181,80 @@ export async function deleteOrder(orderId: string) {
 
   if (!data || data.length === 0) {
     return { success: false, error: 'No order deleted (check RLS policies)' };
+  }
+
+  return { success: true };
+}
+
+export async function createProduct(product: {
+  name: string;
+  category: string;
+  notes: string;
+  price: string;
+  volume: string | null;
+  image: string;
+}) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data, error } = await supabase
+    .from('products')
+    .insert(product)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating product:', error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true, product: data };
+}
+
+export async function updateProduct(id: number, updates: Partial<{
+  name: string;
+  category: string;
+  notes: string;
+  price: string;
+  volume: string | null;
+  image: string;
+}>) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data, error } = await supabase
+    .from('products')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating product:', error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true, product: data };
+}
+
+export async function deleteProduct(id: number) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { error } = await supabase
+    .from('products')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting product:', error);
+    return { success: false, error: error.message };
   }
 
   return { success: true };

@@ -68,9 +68,19 @@ function ProductCard({ product, index, spanClass }: { product: Product, index: n
         >
           <div className="flex flex-col gap-1 mb-4">
             <h3 className="text-white font-cormorant-garamond text-3xl md:text-5xl leading-[1]">{product.name}</h3>
-            <span className="text-white/80 font-light text-lg md:text-2xl mt-1">
-              {product.price}
-            </span>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-white/80 font-light text-lg md:text-2xl">
+                {product.price.startsWith('₹') ? product.price : `₹${product.price}`}
+              </span>
+              {product.volume && (
+                <>
+                  <span className="w-1 h-1 rounded-full bg-white/20" />
+                  <span className="text-white/40 font-light text-sm md:text-base uppercase tracking-widest">
+                    {product.volume.toLowerCase().includes('ml') ? product.volume : `${product.volume} ml`}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
           
           <AnimatePresence>

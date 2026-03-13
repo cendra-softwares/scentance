@@ -111,7 +111,15 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="text-white font-medium truncate">{item.name}</h4>
-                            <p className="text-white/40 text-sm">{item.price}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <p className="text-white/40 text-sm">{item.price}</p>
+                              {item.volume && (
+                                <>
+                                  <span className="w-1 h-1 rounded-full bg-white/10" />
+                                  <span className="text-white/20 text-[10px] uppercase tracking-wider">{item.volume}</span>
+                                </>
+                              )}
+                            </div>
                             <div className="flex items-center gap-3 mt-2">
                               <button 
                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}

@@ -50,7 +50,7 @@ Scentence is a modern digital flagship for premium perfumery. It combines a soph
 | Role | What They Can Do | Dashboard |
 |------|------------------|-----------|
 | **Customer** | Browse perfumes, manage cart, place orders, receive email updates | `/` |
-| **Admin** | View all orders, update status, delete orders, export data, print shipping labels | `/admin` |
+| **Admin** | View all orders, update status, delete orders, export data, print shipping labels | `/dashboard` |
 
 ---
 
@@ -108,9 +108,9 @@ Scentence is a modern digital flagship for premium perfumery. It combines a soph
 ```
 scentance/
 ├── src/
-│   ├── app/                # Next.js App Router (Admin, Login, Perfumes)
-│   ├── components/         # React components (UI, Admin, Emails)
-│   │   ├── admin/         # Order management components
+│   ├── app/                # Next.js App Router (Dashboard, Login, Perfumes)
+│   ├── components/         # React components (UI, Dashboard, Emails)
+│   │   ├── dashboard/     # Order management components
 │   │   ├── emails/        # React Email templates
 │   │   └── ui/            # Reusable UI primitives
 │   ├── lib/                # Core logic

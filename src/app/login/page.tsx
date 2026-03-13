@@ -30,7 +30,7 @@ export default function LoginPage() {
       setError(signInError.message);
     } else {
       setMessage("Signed in successfully! Redirecting...");
-      window.location.href = "/admin";
+      window.location.href = "/dashboard";
     }
 
     setLoading(false);
