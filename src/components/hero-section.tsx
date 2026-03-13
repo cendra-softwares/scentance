@@ -110,7 +110,7 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
           }
         }}
         className={cn(
-          'relative w-full min-h-screen flex flex-col items-center justify-center overflow-x-hidden bg-background text-foreground p-4',
+          'relative w-full min-h-screen flex flex-col items-center justify-center overflow-x-hidden bg-transparent text-white p-4',
           className
         )}
         {...props}
@@ -191,7 +191,7 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
             <Button
               variant="outline"
               size="icon"
-              className="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 rounded-full h-10 w-10 z-20 bg-background/50 backdrop-blur-sm text-white border-white/30 hover:bg-white/20 hover:text-white"
+              className="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 rounded-full h-10 w-10 z-20 bg-white/10 backdrop-blur-sm text-white border-white/30 hover:bg-white/20 hover:text-white"
               onClick={handlePrev}
             >
               <ChevronLeft className="h-5 w-5" />
@@ -199,7 +199,7 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
             <Button
               variant="outline"
               size="icon"
-              className="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 rounded-full h-10 w-10 z-20 bg-background/50 backdrop-blur-sm text-white border-white/30 hover:bg-white/20 hover:text-white"
+              className="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 rounded-full h-10 w-10 z-20 bg-white/10 backdrop-blur-sm text-white border-white/30 hover:bg-white/20 hover:text-white"
               onClick={handleNext}
             >
               <ChevronRight className="h-5 w-5" />
