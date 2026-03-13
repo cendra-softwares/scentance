@@ -14,7 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { LayoutDashboardIcon, Settings2Icon, CircleHelpIcon, SearchIcon, CommandIcon, ShoppingCartIcon } from "lucide-react"
+import { LayoutDashboardIcon, Settings2Icon, CircleHelpIcon, SearchIcon, CommandIcon, ShoppingCartIcon, PackageIcon } from "lucide-react"
 
 const data = {
   user: {
@@ -28,6 +28,13 @@ const data = {
       url: "/dashboard",
       icon: (
         <LayoutDashboardIcon />
+      ),
+    },
+    {
+      title: "Products",
+      url: "/dashboard/products",
+      icon: (
+        <PackageIcon />
       ),
     },
     {

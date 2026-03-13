@@ -9,6 +9,7 @@ export interface Product {
   category: string;
   notes: string;
   price: string;
+  volume: string | null;
   image: string;
 }
 
