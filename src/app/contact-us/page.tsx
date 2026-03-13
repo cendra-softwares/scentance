@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FaInstagram, FaWhatsapp } from 'react-icons/fa';
@@ -49,13 +51,13 @@ export default function ContactUs() {
                 </div>
               </a>
 
-              <a href="https://www.instagram.com/scentence.in/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-neutral-300 hover:text-white transition-colors group">
+              <a href="https://www.instagram.com/scentenceparfum/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-neutral-300 hover:text-white transition-colors group">
                 <div className="w-12 h-12 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center group-hover:border-neutral-700 transition-colors">
                   <FaInstagram className="text-xl" />
                 </div>
                 <div>
                   <p className="text-sm text-neutral-500">Instagram</p>
-                  <p className="font-medium">@scentence.in</p>
+                  <p className="font-medium">@scentenceparfum</p>
                 </div>
               </a>
             </div>
