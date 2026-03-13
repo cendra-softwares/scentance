@@ -24,17 +24,17 @@ const data = {
   },
   navMain: [
     {
-      title: "Orders",
-      url: "/dashboard",
-      icon: (
-        <ShoppingCartIcon />
-      ),
-    },
-    {
       title: "Dashboard",
       url: "/dashboard",
       icon: (
         <LayoutDashboardIcon />
+      ),
+    },
+    {
+      title: "Orders",
+      url: "/dashboard/orders",
+      icon: (
+        <ShoppingCartIcon />
       ),
     },
   ],
