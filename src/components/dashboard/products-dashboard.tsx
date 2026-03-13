@@ -79,17 +79,17 @@ export function ProductsDashboard({ initialProducts }: ProductsDashboardProps) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
-                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Product</th>
-                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Category</th>
-                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Volume</th>
-                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Price</th>
-                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
+                <th className="px-4 md:px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Product</th>
+                <th className="hidden md:table-cell px-4 md:px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Category</th>
+                <th className="hidden md:table-cell px-4 md:px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Volume</th>
+                <th className="px-4 md:px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Price</th>
+                <th className="px-4 md:px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {filteredProducts.map((product) => (
                 <tr key={product.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors group">
-                  <td className="px-6 py-4">
+                  <td className="px-4 md:px-6 py-4">
                     <div className="flex items-center gap-4">
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex-shrink-0">
                         <Image 
@@ -105,21 +105,23 @@ export function ProductsDashboard({ initialProducts }: ProductsDashboardProps) {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="hidden md:table-cell px-4 md:px-6 py-4">
                     <span className="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-full text-[10px] font-bold uppercase tracking-wider">
                       {product.category}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="hidden md:table-cell px-4 md:px-6 py-4">
                     <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
-                      {product.volume || "—"}
+                      {product.volume ? (product.volume.toLowerCase().includes('ml') ? product.volume : `${product.volume} ml`) : "—"}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="font-bold text-zinc-900 dark:text-white">{product.price}</span>
+                  <td className="px-4 md:px-6 py-4">
+                    <span className="font-bold text-zinc-900 dark:text-white">
+                      {product.price.startsWith('₹') ? product.price : `₹${product.price}`}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <td className="px-4 md:px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <button 
                         onClick={() => setIsEditing(product)}
                         className="p-2 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"
@@ -212,12 +214,19 @@ function ProductForm({ product, onClose, onSave }: {
     e.preventDefault();
     setIsSaving(true);
 
+    // Normalize price and volume by removing symbols if present
+    const normalizedData = {
+      ...formData,
+      price: formData.price.trim().replace(/[₹]/g, '').trim(),
+      volume: formData.volume.trim().replace(/ml/gi, '').trim(),
+    };
+
     try {
       if (product) {
-        const result = await updateProduct(product.id, formData);
+        const result = await updateProduct(product.id, normalizedData);
         if (result.success) onSave(result.product);
       } else {
-        const result = await createProduct(formData);
+        const result = await createProduct(normalizedData);
         if (result.success) onSave(result.product);
       }
     } catch (error) {
@@ -282,7 +291,7 @@ function ProductForm({ product, onClose, onSave }: {
                 value={formData.price}
                 onChange={e => setFormData(prev => ({ ...prev, price: e.target.value }))}
                 className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                placeholder="e.g. ₹4,500"
+                placeholder="e.g. 4,500"
               />
             </div>
             <div className="space-y-2">
@@ -292,7 +301,7 @@ function ProductForm({ product, onClose, onSave }: {
                 value={formData.volume}
                 onChange={e => setFormData(prev => ({ ...prev, volume: e.target.value }))}
                 className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                placeholder="e.g. 100 ml"
+                placeholder="e.g. 100"
               />
             </div>
           </div>
