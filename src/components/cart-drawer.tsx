@@ -2,11 +2,66 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, X, Plus, Minus, CheckCircle, ArrowRight, Truck } from "lucide-react";
+import { ShoppingBag, X, Plus, Minus, CheckCircle, ArrowRight, Truck, AlertCircle } from "lucide-react";
 import { useCart } from "@/lib/store/useCart";
 import { Button } from "./ui/button";
 import Image from "next/image";
 import { createOrder } from "@/lib/actions";
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+}
+
+function validateField(name: string, value: string): string | undefined {
+  switch (name) {
+    case "name":
+      if (!value.trim()) return "Full name is required";
+      if (value.trim().length < 2) return "Name must be at least 2 characters";
+      if (!/^[a-zA-Z\s]+$/.test(value.trim())) return "Name can only contain letters";
+      return undefined;
+    case "email":
+      if (!value.trim()) return "Email is required";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Please enter a valid email";
+      return undefined;
+    case "phone":
+      if (!value.trim()) return "Phone number is required";
+      if (!/^[+]?[\d\s()-]{10,}$/.test(value.replace(/\s/g, ""))) return "Please enter a valid 10-digit phone number";
+      return undefined;
+    case "address":
+      if (!value.trim()) return "Shipping address is required";
+      if (value.trim().length < 10) return "Please enter a complete address";
+      return undefined;
+    case "city":
+      if (!value.trim()) return "City is required";
+      if (!/^[a-zA-Z\s]+$/.test(value.trim())) return "City can only contain letters";
+      return undefined;
+    case "state":
+      if (!value.trim()) return "State is required";
+      if (!/^[a-zA-Z\s]+$/.test(value.trim())) return "State can only contain letters";
+      return undefined;
+    case "pincode":
+      if (!value.trim()) return "Pincode is required";
+      if (!/^\d{6}$/.test(value.trim())) return "Pincode must be 6 digits";
+      return undefined;
+    default:
+      return undefined;
+  }
+}
+
+function validateForm(data: { name: string; email: string; phone: string; address: string; city: string; state: string; pincode: string }): FormErrors {
+  const errors: FormErrors = {};
+  Object.keys(data).forEach((key) => {
+    const error = validateField(key, data[key as keyof typeof data]);
+    if (error) errors[key as keyof FormErrors] = error;
+  });
+  return errors;
+}
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -26,6 +81,8 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     state: "",
     pincode: "",
   });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -36,6 +93,16 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate all fields
+    const formErrors = validateForm(formData);
+    setErrors(formErrors);
+    setTouched({ name: true, email: true, phone: true, address: true, city: true, state: true, pincode: true });
+    
+    if (Object.keys(formErrors).length > 0) {
+      return;
+    }
+    
     setIsSubmitting(true);
     
     const result = await createOrder({
@@ -62,6 +129,19 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Validate on change if field was touched
+    if (touched[name]) {
+      const error = validateField(name, value);
+      setErrors((prev) => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   return (
@@ -169,9 +249,15 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         name="name"
                         value={formData.name}
                         onChange={handleInputChange}
+                        onBlur={handleBlur}
                         placeholder="Ex: John Doe"
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
+                        className={`w-full bg-white/5 border ${errors.name && touched.name ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-white/30'} rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none transition-colors`}
                       />
+                      {errors.name && touched.name && (
+                        <p className="text-red-400 text-xs ml-1 flex items-center gap-1">
+                          <AlertCircle size={12} /> {errors.name}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <label className="text-white/40 text-xs uppercase tracking-widest ml-1">Email Address</label>
@@ -181,9 +267,15 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
+                        onBlur={handleBlur}
                         placeholder="Ex: john@example.com"
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
+                        className={`w-full bg-white/5 border ${errors.email && touched.email ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-white/30'} rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none transition-colors`}
                       />
+                      {errors.email && touched.email && (
+                        <p className="text-red-400 text-xs ml-1 flex items-center gap-1">
+                          <AlertCircle size={12} /> {errors.email}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -195,9 +287,15 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
+                      onBlur={handleBlur}
                       placeholder="Ex: +91 98765 43210"
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
+                      className={`w-full bg-white/5 border ${errors.phone && touched.phone ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-white/30'} rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none transition-colors`}
                     />
+                    {errors.phone && touched.phone && (
+                      <p className="text-red-400 text-xs ml-1 flex items-center gap-1">
+                        <AlertCircle size={12} /> {errors.phone}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -207,10 +305,16 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
+                      onBlur={handleBlur}
                       placeholder="Street address, apartment, suite, etc."
                       rows={3}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors resize-none"
+                      className={`w-full bg-white/5 border ${errors.address && touched.address ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-white/30'} rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none transition-colors resize-none`}
                     />
+                    {errors.address && touched.address && (
+                      <p className="text-red-400 text-xs ml-1 flex items-center gap-1">
+                        <AlertCircle size={12} /> {errors.address}
+                      </p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -221,9 +325,15 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         name="city"
                         value={formData.city}
                         onChange={handleInputChange}
+                        onBlur={handleBlur}
                         placeholder="City"
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
+                        className={`w-full bg-white/5 border ${errors.city && touched.city ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-white/30'} rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none transition-colors`}
                       />
+                      {errors.city && touched.city && (
+                        <p className="text-red-400 text-xs ml-1 flex items-center gap-1">
+                          <AlertCircle size={12} /> {errors.city}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <label className="text-white/40 text-xs uppercase tracking-widest ml-1">State</label>
@@ -232,9 +342,15 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         name="state"
                         value={formData.state}
                         onChange={handleInputChange}
+                        onBlur={handleBlur}
                         placeholder="State"
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
+                        className={`w-full bg-white/5 border ${errors.state && touched.state ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-white/30'} rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none transition-colors`}
                       />
+                      {errors.state && touched.state && (
+                        <p className="text-red-400 text-xs ml-1 flex items-center gap-1">
+                          <AlertCircle size={12} /> {errors.state}
+                        </p>
+                      )}
                     </div>
                     <div className="col-span-2 md:col-span-1 space-y-2">
                       <label className="text-white/40 text-xs uppercase tracking-widest ml-1">Pincode</label>
@@ -243,9 +359,15 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         name="pincode"
                         value={formData.pincode}
                         onChange={handleInputChange}
+                        onBlur={handleBlur}
                         placeholder="Pincode"
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
+                        className={`w-full bg-white/5 border ${errors.pincode && touched.pincode ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-white/30'} rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none transition-colors`}
                       />
+                      {errors.pincode && touched.pincode && (
+                        <p className="text-red-400 text-xs ml-1 flex items-center gap-1">
+                          <AlertCircle size={12} /> {errors.pincode}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </form>

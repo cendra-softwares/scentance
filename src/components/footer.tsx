@@ -73,7 +73,7 @@ const Footer = () => {
           <h3 className="text-base font-semibold">Follow Us</h3>
           <ul className="space-y-2 text-neutral-400">
             <li>
-              <a href="https://www.instagram.com/scentence.in/" target="_blank" rel="noopener noreferrer" className="hover:text-white flex items-center gap-2 transition-colors">
+              <a href="https://www.instagram.com/scentenceparfum/" target="_blank" rel="noopener noreferrer" className="hover:text-white flex items-center gap-2 transition-colors">
                 <FaInstagram /> Instagram
               </a>
             </li>

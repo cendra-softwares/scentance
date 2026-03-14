@@ -250,10 +250,10 @@ function ProductForm({ product, onClose, onSave }: {
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-2xl max-h-[90vh] bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col"
       >
-        <div className="p-6 md:p-8 flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800">
-          <h3 className="text-xl font-bold text-zinc-900 dark:text-white">
+        <div className="p-4 md:p-6 flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800 flex-shrink-0">
+          <h3 className="text-lg md:text-xl font-bold text-zinc-900 dark:text-white">
             {product ? 'Edit Product' : 'Add New Product'}
           </h3>
           <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
@@ -261,8 +261,8 @@ function ProductForm({ product, onClose, onSave }: {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-5 overflow-y-auto flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Fragrance Name</label>
               <input 
@@ -319,16 +319,16 @@ function ProductForm({ product, onClose, onSave }: {
 
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Product Image</label>
-            <div className="flex items-center gap-6 p-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
-              <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex items-center justify-center">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex items-center justify-center">
                 {formData.image ? (
                   <Image src={formData.image} alt="Preview" fill className="object-cover" />
                 ) : (
-                  <ImageIcon size={32} className="text-zinc-300" />
+                  <ImageIcon size={28} className="text-zinc-300" />
                 )}
                 {isUploading && (
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <Loader2 size={24} className="text-white animate-spin" />
+                    <Loader2 size={20} className="text-white animate-spin" />
                   </div>
                 )}
               </div>
@@ -351,19 +351,19 @@ function ProductForm({ product, onClose, onSave }: {
             </div>
           </div>
 
-          <div className="pt-4 flex gap-3">
+          <div className="pt-4 flex gap-3 flex-shrink-0">
             <Button 
               type="button"
               onClick={onClose}
               variant="outline"
-              className="flex-1 rounded-xl py-6 font-bold uppercase tracking-widest text-[10px] border-zinc-200 dark:border-zinc-800"
+              className="flex-1 rounded-xl py-4 md:py-6 font-bold uppercase tracking-widest text-[10px] border-zinc-200 dark:border-zinc-800"
             >
               Cancel
             </Button>
             <Button 
               type="submit"
               disabled={isSaving || isUploading || !formData.image}
-              className="flex-[2] bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 rounded-xl py-6 font-bold uppercase tracking-widest text-[10px]"
+              className="flex-[2] bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 rounded-xl py-4 md:py-6 font-bold uppercase tracking-widest text-[10px]"
             >
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : (product ? 'Update Product' : 'Create Product')}
             </Button>
