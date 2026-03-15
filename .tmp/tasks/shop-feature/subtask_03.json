@@ -1,0 +1,31 @@
+{
+  "id": "shop-feature-03",
+  "seq": "03",
+  "title": "Shop Layout & Dynamic Routing",
+  "status": "pending",
+  "depends_on": [
+    "02"
+  ],
+  "parallel": false,
+  "context_files": [
+    ".opencode/context/core/standards/code-quality.md"
+  ],
+  "reference_files": [
+    "src/app/page.tsx"
+  ],
+  "suggested_agent": "OpenFrontendSpecialist",
+  "acceptance_criteria": [
+    "Next.js App Router structure implemented for /shop",
+    "Dynamic routes /[category] and /[category]/[id] handle parameters",
+    "Layout component provides consistent shell for shop pages"
+  ],
+  "deliverables": [
+    "src/app/shop/layout.tsx",
+    "src/app/shop/[category]/page.tsx",
+    "src/app/shop/[category]/[id]/page.tsx"
+  ],
+  "agent_id": null,
+  "started_at": null,
+  "completed_at": null,
+  "completion_summary": null
+}

@@ -1,0 +1,30 @@
+{
+  "id": "shop-feature-04",
+  "seq": "04",
+  "title": "Navigation/Home integration",
+  "status": "pending",
+  "depends_on": [
+    "03"
+  ],
+  "parallel": true,
+  "context_files": [
+    ".opencode/context/core/standards/code-quality.md"
+  ],
+  "reference_files": [
+    "src/app/page.tsx"
+  ],
+  "suggested_agent": "OpenFrontendSpecialist",
+  "acceptance_criteria": [
+    "Main navigation includes a functional link to /shop",
+    "Home page features a 'Shop Now' or 'Explore' entry point",
+    "Navigation links are active/styled correctly based on current route"
+  ],
+  "deliverables": [
+    "src/components/layout/Navbar.tsx",
+    "src/app/page.tsx"
+  ],
+  "agent_id": null,
+  "started_at": null,
+  "completed_at": null,
+  "completion_summary": null
+}

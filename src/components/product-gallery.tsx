@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import BlurText from "./BlurText";
 import { Button } from "./ui/button";
@@ -26,6 +27,11 @@ const getSpanClasses = (index: number) => {
 function ProductCard({ product, index, spanClass }: { product: Product, index: number, spanClass: string }) {
   const [isHovered, setIsHovered] = useState(false);
   const { addItem } = useCart();
+
+  const priceValue = parseFloat(product.price.replace(/,/g, '')) || 0;
+  const discount = product.discount_percent || 0;
+  const finalPrice = discount > 0 ? priceValue * (1 - discount / 100) : priceValue;
+  const hasDiscount = discount > 0;
 
   return (
     <motion.div
@@ -69,9 +75,19 @@ function ProductCard({ product, index, spanClass }: { product: Product, index: n
           <div className="flex flex-col gap-1 mb-4">
             <h3 className="text-white font-cormorant-garamond text-3xl md:text-5xl leading-[1]">{product.name}</h3>
             <div className="flex items-center gap-3 mt-1">
-              <span className="text-white/80 font-light text-lg md:text-2xl">
-                {product.price.startsWith('₹') ? product.price : `₹${product.price}`}
+              {hasDiscount && (
+                <span className="text-white/40 font-light text-lg md:text-xl line-through">
+                  ₹{priceValue.toLocaleString("en-IN")}
+                </span>
+              )}
+              <span className={`font-light text-lg md:text-2xl ${hasDiscount ? 'text-rose-400' : 'text-white/80'}`}>
+                ₹{Math.round(finalPrice).toLocaleString("en-IN")}
               </span>
+              {hasDiscount && (
+                <span className="px-2 py-0.5 bg-rose-500 text-white text-[9px] rounded-full">
+                  -{discount}%
+                </span>
+              )}
               {product.volume && (
                 <>
                   <span className="w-1 h-1 rounded-full bg-white/20" />
@@ -208,9 +224,19 @@ export function ProductGallery() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 1 }}
+          className="flex flex-col items-center gap-12"
         >
-           <p className="text-white/20 text-[10px] md:text-xs uppercase tracking-[0.8em] mb-12">Archives of Essence • Est. 1924</p>
-           <div className="h-px w-32 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto" />
+           <Link 
+            href="/shop"
+            className="group relative px-12 py-5 bg-white text-black rounded-full text-xs uppercase tracking-[0.4em] font-bold hover:scale-105 transition-all duration-500 shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:shadow-[0_0_60px_rgba(255,255,255,0.25)]"
+           >
+            Explore Full Collection
+            <div className="absolute inset-0 rounded-full border border-white/20 scale-110 group-hover:scale-100 opacity-0 group-hover:opacity-100 transition-all duration-500" />
+           </Link>
+           <div className="space-y-12">
+             <p className="text-white/20 text-[10px] md:text-xs uppercase tracking-[0.8em]">Archives of Essence • Est. 1924</p>
+             <div className="h-px w-32 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto" />
+           </div>
         </motion.div>
       </div>
     </section>

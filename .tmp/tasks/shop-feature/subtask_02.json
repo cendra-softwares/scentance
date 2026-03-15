@@ -1,0 +1,27 @@
+{
+  "id": "shop-feature-02",
+  "seq": "02",
+  "title": "Type Refactoring",
+  "status": "pending",
+  "depends_on": [
+    "01"
+  ],
+  "parallel": true,
+  "context_files": [
+    ".opencode/context/core/standards/code-quality.md"
+  ],
+  "reference_files": [],
+  "suggested_agent": "CoderAgent",
+  "acceptance_criteria": [
+    "TypeScript interfaces match the new normalized SQL schema",
+    "No use of 'any' in new type definitions",
+    "Types are exported and accessible to frontend components"
+  ],
+  "deliverables": [
+    "src/types/shop.ts"
+  ],
+  "agent_id": null,
+  "started_at": null,
+  "completed_at": null,
+  "completion_summary": null
+}

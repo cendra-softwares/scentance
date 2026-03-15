@@ -1,0 +1,28 @@
+{
+  "id": "shop-feature-06",
+  "seq": "06",
+  "title": "Product Detail Page",
+  "status": "pending",
+  "depends_on": [
+    "03"
+  ],
+  "parallel": true,
+  "context_files": [
+    ".opencode/context/core/standards/code-quality.md"
+  ],
+  "reference_files": [],
+  "suggested_agent": "OpenFrontendSpecialist",
+  "acceptance_criteria": [
+    "Individual product data fetched by ID",
+    "Full product details, images, and attributes displayed",
+    "Breadcrumb navigation back to category listing works"
+  ],
+  "deliverables": [
+    "src/components/shop/ProductDetail.tsx",
+    "src/app/shop/[category]/[id]/page.tsx"
+  ],
+  "agent_id": null,
+  "started_at": null,
+  "completed_at": null,
+  "completion_summary": null
+}

@@ -1,0 +1,38 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-03-14T10:00:00Z",
+  "libraries": {
+    "nextjs": {
+      "files": [
+        {
+          "filename": "ecommerce-shop-pages.md",
+          "topic": "ecommerce shop pages best practices filtering pagination",
+          "tech_stack": "Next.js 15",
+          "fetched": "2026-03-14T10:00:00Z",
+          "source": "Context7 API"
+        },
+        {
+          "filename": "cart-state-server-actions.md",
+          "topic": "managing shopping cart state server actions client components",
+          "tech_stack": "Next.js 15",
+          "fetched": "2026-03-14T10:00:00Z",
+          "source": "Context7 API"
+        },
+        {
+          "filename": "shared-layouts-categories.md",
+          "topic": "shared layouts multiple product categories",
+          "tech_stack": "Next.js 15",
+          "fetched": "2026-03-14T10:00:00Z",
+          "source": "Context7 API"
+        },
+        {
+          "filename": "dynamic-routing-product-details.md",
+          "topic": "dynamic routing product details shop category id",
+          "tech_stack": "Next.js 15",
+          "fetched": "2026-03-14T10:00:00Z",
+          "source": "Context7 API"
+        }
+      ]
+    }
+  }
+}

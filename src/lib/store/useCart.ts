@@ -2,19 +2,20 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export interface CartItem {
-  id: number;
+  id: string | number; // Support both old numeric IDs and new UUIDs
   name: string;
-  price: string;
+  price: string | number;
   image: string;
-  volume?: string | null;
   quantity: number;
+  variantLabel?: string; // e.g. "100ml" or "XL"
+  category?: string;
 }
 
 interface CartState {
   items: CartItem[];
-  addItem: (product: any) => void;
-  removeItem: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
+  addItem: (item: any) => void;
+  removeItem: (id: string | number) => void;
+  updateQuantity: (id: string | number, quantity: number) => void;
   clearCart: () => void;
   totalItems: () => number;
   totalPrice: () => number;
@@ -24,20 +25,31 @@ export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      addItem: (product) => {
+      addItem: (item) => {
         const items = get().items;
-        const existingItem = items.find((item) => item.id === product.id);
+        // For new system, we'll use a combination of id and variantLabel to find uniqueness
+        const existingItem = items.find((i) => i.id === item.id);
 
         if (existingItem) {
           set({
-            items: items.map((item) =>
-              item.id === product.id
-                ? { ...item, quantity: item.quantity + 1 }
-                : item
+            items: items.map((i) =>
+              i.id === item.id
+                ? { ...i, quantity: i.quantity + 1 }
+                : i
             ),
           });
         } else {
-          set({ items: [...items, { ...product, quantity: 1 }] });
+          // Normalize the item for the cart
+          const newItem: CartItem = {
+            id: item.id,
+            name: item.name,
+            price: item.price || item.base_price,
+            image: item.image || item.featured_image,
+            quantity: 1,
+            variantLabel: item.volume || item.variantLabel,
+            category: item.category?.name || item.category
+          };
+          set({ items: [...items, newItem] });
         }
       },
       removeItem: (id) => {
@@ -58,7 +70,10 @@ export const useCart = create<CartState>()(
       totalItems: () => get().items.reduce((acc, item) => acc + item.quantity, 0),
       totalPrice: () => {
         return get().items.reduce((acc, item) => {
-          const price = parseInt(item.price.replace(/[^\d]/g, ''));
+          const priceStr = typeof item.price === 'string' 
+            ? item.price.replace(/[^\d]/g, '') 
+            : item.price.toString();
+          const price = parseInt(priceStr) || 0;
           return acc + price * item.quantity;
         }, 0);
       },

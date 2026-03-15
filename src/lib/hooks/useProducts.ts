@@ -11,6 +11,7 @@ export interface Product {
   price: string;
   volume: string | null;
   image: string;
+  discount_percent?: number;
 }
 
 export function useProducts() {

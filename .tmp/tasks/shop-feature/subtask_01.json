@@ -1,0 +1,26 @@
+{
+  "id": "shop-feature-01",
+  "seq": "01",
+  "title": "SQL Migration (Side-by-side strategy)",
+  "status": "pending",
+  "depends_on": [],
+  "parallel": false,
+  "context_files": [
+    ".opencode/context/core/standards/code-quality.md"
+  ],
+  "reference_files": [],
+  "suggested_agent": "BackendSpecialist",
+  "acceptance_criteria": [
+    "New normalized tables (products, categories, etc.) created",
+    "Existing tables remain functional for side-by-side operation",
+    "Migration script is idempotent",
+    "Foreign key relationships correctly established"
+  ],
+  "deliverables": [
+    "supabase/migrations/20260314000000_normalize_ecommerce.sql"
+  ],
+  "agent_id": null,
+  "started_at": null,
+  "completed_at": null,
+  "completion_summary": null
+}

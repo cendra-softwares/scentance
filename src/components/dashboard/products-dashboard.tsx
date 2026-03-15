@@ -116,9 +116,25 @@ export function ProductsDashboard({ initialProducts }: ProductsDashboardProps) {
                     </span>
                   </td>
                   <td className="px-4 md:px-6 py-4">
-                    <span className="font-bold text-zinc-900 dark:text-white">
-                      {product.price.startsWith('₹') ? product.price : `₹${product.price}`}
-                    </span>
+                    {product.discount_percent && product.discount_percent > 0 ? (
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-zinc-900 dark:text-white">
+                            ₹{Math.round(parseFloat(product.price.replace(/,/g, '')) * (1 - (product.discount_percent / 100)))}
+                          </span>
+                          <span className="px-1.5 py-0.5 bg-rose-500 text-white text-[10px] font-bold rounded">
+                            -{product.discount_percent}%
+                          </span>
+                        </div>
+                        <span className="text-xs text-zinc-400 line-through">
+                          {product.price.startsWith('₹') ? product.price : `₹${product.price}`}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="font-bold text-zinc-900 dark:text-white">
+                        {product.price.startsWith('₹') ? product.price : `₹${product.price}`}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 md:px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
@@ -176,9 +192,39 @@ function ProductForm({ product, onClose, onSave }: {
     price: product?.price || "",
     volume: product?.volume || "",
     image: product?.image || "",
+    discount_percent: product?.discount_percent || null,
   });
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const originalPrice = parseFloat(formData.price.replace(/,/g, '')) || 0;
+  const discountPercent = formData.discount_percent;
+
+  const calculateFromPercent = (percent: number) => {
+    const amount = originalPrice * (percent / 100);
+    const discounted = originalPrice - amount;
+    return { amount, discounted };
+  };
+
+  const calculateFromDiscounted = (discounted: number) => {
+    const amount = originalPrice - discounted;
+    const percent = originalPrice > 0 ? (amount / originalPrice) * 100 : 0;
+    return { percent, amount };
+  };
+
+  const calculateFromAmount = (amount: number) => {
+    const percent = originalPrice > 0 ? (amount / originalPrice) * 100 : 0;
+    const discounted = originalPrice - amount;
+    return { percent, discounted };
+  };
+
+  const getDiscountInfo = () => {
+    if (!discountPercent || originalPrice <= 0) return null;
+    const { amount, discounted } = calculateFromPercent(discountPercent);
+    return { amount, discounted };
+  };
+
+  const discountInfo = getDiscountInfo();
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -217,8 +263,9 @@ function ProductForm({ product, onClose, onSave }: {
     // Normalize price and volume by removing symbols if present
     const normalizedData = {
       ...formData,
-      price: formData.price.trim().replace(/[₹]/g, '').trim(),
+      price: formData.price.trim().replace(/[₹,]/g, '').trim(),
       volume: formData.volume.trim().replace(/ml/gi, '').trim(),
+      discount_percent: formData.discount_percent ?? 0,
     };
 
     try {
@@ -304,6 +351,75 @@ function ProductForm({ product, onClose, onSave }: {
                 placeholder="e.g. 100"
               />
             </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Discount (%)</label>
+              <input 
+                type="number"
+                min="0"
+                max="99"
+                value={formData.discount_percent ?? ""}
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setFormData(prev => ({ ...prev, discount_percent: null }));
+                  } else {
+                    const percent = parseFloat(val) || 0;
+                    setFormData(prev => ({ ...prev, discount_percent: percent }));
+                  }
+                }}
+                className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                placeholder="e.g. 17"
+              />
+              {discountInfo && (
+                <p className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                  Save ₹{Math.round(discountInfo.amount)} → Final: ₹{Math.round(discountInfo.discounted)}
+                </p>
+              )}
+            </div>
+            {formData.price && parseFloat(formData.price.replace(/,/g, '')) > 0 && (
+              <>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Discounted Price (₹)</label>
+                  <input 
+                    type="number"
+                    min="0"
+                    defaultValue={discountInfo ? Math.round(discountInfo.discounted) : ""}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val === "") {
+                        setFormData(prev => ({ ...prev, discount_percent: null }));
+                      } else {
+                        const discounted = parseFloat(val) || 0;
+                        const { percent, amount } = calculateFromDiscounted(discounted);
+                        setFormData(prev => ({ ...prev, discount_percent: Math.round(percent * 10) / 10 }));
+                      }
+                    }}
+                    className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    placeholder="e.g. 1500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Discount Amount (₹)</label>
+                  <input 
+                    type="number"
+                    min="0"
+                    defaultValue={discountInfo ? Math.round(discountInfo.amount) : ""}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val === "") {
+                        setFormData(prev => ({ ...prev, discount_percent: null }));
+                      } else {
+                        const amount = parseFloat(val) || 0;
+                        const { percent, discounted } = calculateFromAmount(amount);
+                        setFormData(prev => ({ ...prev, discount_percent: Math.round(percent * 10) / 10 }));
+                      }
+                    }}
+                    className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    placeholder="e.g. 400"
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           <div className="space-y-2">

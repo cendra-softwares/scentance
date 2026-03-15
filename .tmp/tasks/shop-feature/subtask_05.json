@@ -1,0 +1,28 @@
+{
+  "id": "shop-feature-05",
+  "seq": "05",
+  "title": "Product Listing Page",
+  "status": "pending",
+  "depends_on": [
+    "03"
+  ],
+  "parallel": true,
+  "context_files": [
+    ".opencode/context/core/standards/code-quality.md"
+  ],
+  "reference_files": [],
+  "suggested_agent": "OpenFrontendSpecialist",
+  "acceptance_criteria": [
+    "Products are fetched and filtered by category correctly",
+    "Responsive grid of product cards implemented",
+    "Category name is displayed as page title"
+  ],
+  "deliverables": [
+    "src/components/shop/ProductListing.tsx",
+    "src/app/shop/[category]/page.tsx"
+  ],
+  "agent_id": null,
+  "started_at": null,
+  "completed_at": null,
+  "completion_summary": null
+}

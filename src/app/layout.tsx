@@ -40,6 +40,7 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith("/dashboard") || pathname === "/login";
+  const isShop = pathname?.startsWith("/shop");
 
   return (
     <html lang="en">
@@ -48,13 +49,13 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="manifest" href="/site.webmanifest" />
-        <title>Scentence | Premium Fragrances</title>
+        <title>Scentance | Premium Fragrances</title>
         <meta name="description" content="Discover a meticulously curated archive of essence. From avant-garde originals to timeless master compositions." />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${cormorantGaramond.variable} ${gayathri.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${cormorantGaramond.variable} ${gayathri.variable} antialiased dark`}
       >
-        <MeshBackground className="fixed inset-0 -z-10" />
+        {!isShop && <MeshBackground className="fixed inset-0 -z-10" />}
         <div className="relative z-10">
           {children}
           {!isDashboard && <CartIcon />}
