@@ -12,6 +12,14 @@ export interface Product {
   volume: string | null;
   image: string;
   discount_percent?: number;
+  top_note?: string;
+  middle_note?: string;
+  bottom_note?: string;
+  fragrance_type?: string;
+  product_type?: string;
+  strength?: string;
+  sustainable?: string;
+  preferences?: string;
 }
 
 export function useProducts() {

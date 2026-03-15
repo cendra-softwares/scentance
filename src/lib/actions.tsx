@@ -193,6 +193,14 @@ export async function createProduct(product: {
   price: string;
   volume: string | null;
   image: string;
+  top_note?: string;
+  middle_note?: string;
+  bottom_note?: string;
+  fragrance_type?: string;
+  product_type?: string;
+  strength?: string;
+  sustainable?: string;
+  preferences?: string;
 }) {
   const supabase = await createClient();
 
@@ -220,6 +228,14 @@ export async function updateProduct(id: number, updates: Partial<{
   price: string;
   volume: string | null;
   image: string;
+  top_note?: string;
+  middle_note?: string;
+  bottom_note?: string;
+  fragrance_type?: string;
+  product_type?: string;
+  strength?: string;
+  sustainable?: string;
+  preferences?: string;
 }>) {
   const supabase = await createClient();
 

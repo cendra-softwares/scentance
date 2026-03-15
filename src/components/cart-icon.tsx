@@ -9,7 +9,7 @@ import { CartDrawer } from "./cart-drawer";
 export function CartIcon() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const { totalItems } = useCart();
+  const { totalItems, forceCartUp } = useCart();
   const count = totalItems();
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export function CartIcon() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-8 right-8 z-50 w-16 h-16 bg-white text-black rounded-full shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center justify-center group border border-white/20"
+            className={`fixed bottom-8 right-8 z-50 w-16 h-16 bg-white text-black rounded-full shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center justify-center group border border-white/20 transition-all duration-300 ${forceCartUp ? 'bottom-28' : 'bottom-8'}`}
           >
             <ShoppingBag size={24} className="group-hover:scale-110 transition-transform duration-300" />
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-black">

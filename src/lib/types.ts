@@ -46,6 +46,14 @@ export interface Product {
   discount_percent?: number;
   slug?: string;
   is_active?: boolean;
+  top_note?: string;
+  middle_note?: string;
+  bottom_note?: string;
+  fragrance_type?: string;
+  product_type?: string;
+  strength?: string;
+  sustainable?: string;
+  preferences?: string;
 }
 
 export interface CartItem {

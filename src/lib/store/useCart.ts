@@ -14,10 +14,12 @@ export interface CartItem {
 
 interface CartState {
   items: CartItem[];
+  forceCartUp: boolean;
   addItem: (item: any) => void;
   removeItem: (id: string | number) => void;
   updateQuantity: (id: string | number, quantity: number) => void;
   clearCart: () => void;
+  setForceCartUp: (value: boolean) => void;
   totalItems: () => number;
   totalPrice: () => number;
 }
@@ -26,6 +28,7 @@ export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      forceCartUp: false,
       addItem: (item) => {
         const items = get().items;
         // For new system, we'll use a combination of id and variantLabel to find uniqueness
@@ -68,6 +71,7 @@ export const useCart = create<CartState>()(
         });
       },
       clearCart: () => set({ items: [] }),
+      setForceCartUp: (value: boolean) => set({ forceCartUp: value }),
       totalItems: () => get().items.reduce((acc, item) => acc + item.quantity, 0),
       totalPrice: () => {
         return get().items.reduce((acc, item) => {

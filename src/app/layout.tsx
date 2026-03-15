@@ -8,6 +8,7 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import Footer from "@/components/footer";
 import { CartIcon } from "@/components/cart-icon";
+import { Toaster } from "@/components/ui/sonner";
 
 const MeshBackground = dynamic(() => import("@/components/ui/mesh-background"), { ssr: false });
 
@@ -59,6 +60,7 @@ export default function RootLayout({
         <div className="relative z-10">
           {children}
           {!isDashboard && <CartIcon />}
+          <Toaster position="top-center" richColors closeButton />
         </div>
         {!isDashboard && <Footer />}
       </body>

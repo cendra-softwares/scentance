@@ -193,6 +193,14 @@ function ProductForm({ product, onClose, onSave }: {
     volume: product?.volume || "",
     image: product?.image || "",
     discount_percent: product?.discount_percent || null,
+    top_note: product?.top_note || "",
+    middle_note: product?.middle_note || "",
+    bottom_note: product?.bottom_note || "",
+    fragrance_type: product?.fragrance_type || "",
+    product_type: product?.product_type || "",
+    strength: product?.strength || "",
+    sustainable: product?.sustainable || "",
+    preferences: product?.preferences || "",
   });
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -431,6 +439,84 @@ function ProductForm({ product, onClose, onSave }: {
               className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
               placeholder="Describe the scent profile..."
             />
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Product Specifications</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-medium text-zinc-400 uppercase">Top Note</label>
+                <input 
+                  value={formData.top_note}
+                  onChange={e => setFormData(prev => ({ ...prev, top_note: e.target.value }))}
+                  className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="e.g. Amber"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-medium text-zinc-400 uppercase">Middle Note</label>
+                <input 
+                  value={formData.middle_note}
+                  onChange={e => setFormData(prev => ({ ...prev, middle_note: e.target.value }))}
+                  className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="e.g. Musk"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-medium text-zinc-400 uppercase">Bottom Note</label>
+                <input 
+                  value={formData.bottom_note}
+                  onChange={e => setFormData(prev => ({ ...prev, bottom_note: e.target.value }))}
+                  className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="e.g. Vanilla"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-medium text-zinc-400 uppercase">Fragrance Type</label>
+                <input 
+                  value={formData.fragrance_type}
+                  onChange={e => setFormData(prev => ({ ...prev, fragrance_type: e.target.value }))}
+                  className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="e.g. Oriental"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-medium text-zinc-400 uppercase">Type</label>
+                <input 
+                  value={formData.product_type}
+                  onChange={e => setFormData(prev => ({ ...prev, product_type: e.target.value }))}
+                  className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="e.g. Eau de Parfum"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-medium text-zinc-400 uppercase">Strength</label>
+                <input 
+                  value={formData.strength}
+                  onChange={e => setFormData(prev => ({ ...prev, strength: e.target.value }))}
+                  className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="e.g. Medium"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-medium text-zinc-400 uppercase">Sustainable</label>
+                <input 
+                  value={formData.sustainable}
+                  onChange={e => setFormData(prev => ({ ...prev, sustainable: e.target.value }))}
+                  className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="e.g. Regular"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-medium text-zinc-400 uppercase">Preferences</label>
+                <input 
+                  value={formData.preferences}
+                  onChange={e => setFormData(prev => ({ ...prev, preferences: e.target.value }))}
+                  className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="e.g. Cruelty-Free"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
