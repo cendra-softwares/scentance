@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BlurText from "./BlurText";
 import { Button } from "./ui/button";
 import { useCart } from "@/lib/store/useCart";
@@ -13,25 +13,47 @@ const categories = ["All", "Original", "7A Master Copy"];
 
 const getSpanClasses = (index: number) => {
   const pattern = [
-    "col-span-2 md:col-span-2 md:row-span-2", // 0: Large Feature
-    "col-span-1 md:col-span-1 md:row-span-1", // 1: Small
-    "col-span-1 md:col-span-1 md:row-span-2", // 2: Tall
-    "col-span-2 md:col-span-2 md:row-span-1", // 3: Wide
-    "col-span-1 md:col-span-1 md:row-span-1", // 4: Small
-    "col-span-1 md:col-span-1 md:row-span-2", // 5: Tall
-    "col-span-2 md:col-span-2 md:row-span-2", // 6: Large
+    "col-span-2 lg:col-span-2 lg:row-span-2", // 0: Large Feature
+    "col-span-1 lg:col-span-1 lg:row-span-1", // 1: Small
+    "col-span-1 lg:col-span-1 lg:row-span-2", // 2: Tall
+    "col-span-2 lg:col-span-2 lg:row-span-1", // 3: Wide
+    "col-span-1 lg:col-span-1 lg:row-span-1", // 4: Small
+    "col-span-1 lg:col-span-1 lg:row-span-2", // 5: Tall
+    "col-span-2 lg:col-span-2 lg:row-span-2", // 6: Large
   ];
   return pattern[index % pattern.length];
 };
 
 function ProductCard({ product, index, spanClass }: { product: Product, index: number, spanClass: string }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { addItem } = useCart();
 
   const priceValue = parseFloat(product.price.replace(/,/g, '')) || 0;
   const discount = product.discount_percent || 0;
   const finalPrice = discount > 0 ? priceValue * (1 - discount / 100) : priceValue;
   const hasDiscount = discount > 0;
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (isMobile) {
+      e.stopPropagation();
+      setIsExpanded(!isExpanded);
+    } else {
+      setIsHovered(!isHovered);
+    }
+  };
+
+  const isActive = isMobile ? isExpanded : isHovered;
 
   return (
     <motion.div
@@ -40,10 +62,10 @@ function ProductCard({ product, index, spanClass }: { product: Product, index: n
       whileInView={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.6, delay: (index % 4) * 0.1 }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={() => setIsHovered(!isHovered)}
-      className={`group relative overflow-hidden rounded-[2rem] md:rounded-[3rem] cursor-pointer bg-neutral-900 ${spanClass} h-full`}
+      onMouseEnter={() => window.innerWidth >= 768 && setIsHovered(true)}
+      onMouseLeave={() => window.innerWidth >= 768 && setIsHovered(false)}
+      onClick={handleClick}
+      className={`group relative overflow-hidden rounded-2xl lg:rounded-[3rem] cursor-pointer bg-neutral-900 ${spanClass} min-h-[200px] lg:min-h-0`}
     >
       <motion.div 
         className="absolute inset-0 z-0"
@@ -59,39 +81,39 @@ function ProductCard({ product, index, spanClass }: { product: Product, index: n
         />
       </motion.div>
       
-      <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-500 ${isHovered ? 'opacity-100' : 'opacity-70'}`} />
+      <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-500 ${isActive ? 'opacity-100' : 'opacity-80'}`} />
 
-      <div className="absolute top-6 left-6 z-10">
-        <span className="px-4 py-1.5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-full text-[9px] uppercase tracking-[0.2em] text-white font-medium">
+      <div className="absolute top-3 left-3 lg:top-6 lg:left-6 z-10">
+        <span className="px-3 py-1 lg:px-4 lg:py-1.5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-full text-[8px] lg:text-[9px] uppercase tracking-[0.2em] text-white font-medium">
           {product.category}
         </span>
       </div>
 
-      <div className="absolute inset-0 p-6 md:p-10 flex flex-col justify-end z-10">
+      <div className="absolute inset-0 p-4 lg:p-10 flex flex-col justify-end z-10">
         <motion.div
-          animate={{ y: isHovered ? 0 : 15 }}
+          animate={{ y: isActive ? 0 : 8 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
-          <div className="flex flex-col gap-1 mb-4">
-            <h3 className="text-white font-cormorant-garamond text-3xl md:text-5xl leading-[1]">{product.name}</h3>
-            <div className="flex items-center gap-3 mt-1">
+          <div className="flex flex-col gap-1 mb-2 lg:mb-4">
+            <h3 className="text-white font-cormorant-garamond text-xl lg:text-3xl xl:text-5xl leading-[1] line-clamp-2">{product.name}</h3>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 lg:mt-2">
               {hasDiscount && (
-                <span className="text-white/40 font-light text-lg md:text-xl line-through">
+                <span className="text-white/40 font-medium text-sm lg:text-xl xl:text-2xl line-through">
                   ₹{priceValue.toLocaleString("en-IN")}
                 </span>
               )}
-              <span className={`font-light text-lg md:text-2xl ${hasDiscount ? 'text-rose-400' : 'text-white/80'}`}>
+              <span className={`font-bold text-lg lg:text-2xl xl:text-3xl ${hasDiscount ? 'text-rose-400' : 'text-white/80'}`}>
                 ₹{Math.round(finalPrice).toLocaleString("en-IN")}
               </span>
               {hasDiscount && (
-                <span className="px-2 py-0.5 bg-rose-500 text-white text-[9px] rounded-full">
+                <span className="px-2 py-1 lg:px-4 lg:py-2 bg-rose-600 text-white text-[10px] lg:text-base font-bold rounded-full shadow-lg shadow-rose-500/30">
                   -{discount}%
                 </span>
               )}
               {product.volume && (
                 <>
                   <span className="w-1 h-1 rounded-full bg-white/20" />
-                  <span className="text-white/40 font-light text-sm md:text-base uppercase tracking-widest">
+                  <span className="text-white/40 font-light text-[10px] lg:text-sm xl:text-base uppercase tracking-widest">
                     {product.volume.toLowerCase().includes('ml') ? product.volume : `${product.volume} ml`}
                   </span>
                 </>
@@ -100,12 +122,41 @@ function ProductCard({ product, index, spanClass }: { product: Product, index: n
           </div>
           
           <AnimatePresence>
-            {isHovered && (
+            {isActive && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.4 }}
+                className="lg:hidden"
+              >
+                <p className="text-white/50 text-xs mb-4 font-light tracking-wide line-clamp-2">
+                  {product.notes}
+                </p>
+                
+                <div className="flex gap-2">
+                   <Button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addItem(product);
+                    }}
+                    className="flex-1 bg-white text-black hover:bg-neutral-200 rounded-full py-3 font-bold uppercase tracking-widest text-[9px] transition-transform active:scale-[0.98]"
+                  >
+                    Add to Cart
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {(isHovered || isExpanded) && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.4 }}
+                className="hidden lg:block"
               >
                 <p className="text-white/50 text-xs md:text-sm mb-8 font-light tracking-wide max-w-[90%]">
                   {product.notes}
@@ -135,6 +186,10 @@ function ProductCard({ product, index, spanClass }: { product: Product, index: n
               </motion.div>
             )}
           </AnimatePresence>
+          
+          <p className="text-white/30 text-[10px] mt-2 hidden lg:block xl:hidden">
+            {isExpanded ? 'Tap to collapse' : 'Hover for details'}
+          </p>
         </motion.div>
       </div>
     </motion.div>
@@ -198,7 +253,7 @@ export function ProductGallery() {
 
       <motion.div 
         layout
-        className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-10 auto-rows-[250px] md:auto-rows-[350px] grid-flow-row-dense max-w-[1600px] mx-auto min-h-[500px]"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-10 auto-rows-[220px] lg:auto-rows-[350px] grid-flow-row-dense max-w-[1600px] mx-auto min-h-[400px]"
       >
         <AnimatePresence mode="popLayout">
           {loading ? (

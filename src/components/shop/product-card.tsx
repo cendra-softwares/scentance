@@ -47,8 +47,8 @@ export function ProductCard({ product, categorySlug, index = 0 }: ProductCardPro
           {/* Discount Badge */}
           {hasDiscount && (
             <div className="absolute top-6 left-6">
-              <span className="px-3 py-1 bg-rose-500 backdrop-blur-md border border-rose-400 rounded-full text-[8px] uppercase tracking-widest text-white">
-                -{discount}%
+              <span className="px-5 py-2 bg-rose-600 backdrop-blur-md border-2 border-rose-400 rounded-full text-sm font-bold uppercase tracking-widest text-white shadow-lg shadow-rose-500/30">
+                -{discount}% OFF
               </span>
             </div>
           )}
@@ -73,13 +73,13 @@ export function ProductCard({ product, categorySlug, index = 0 }: ProductCardPro
             </h4>
           </div>
           <div className="flex items-center justify-between pt-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               {hasDiscount && (
-                <span className="text-white/40 text-sm font-light line-through">
+                <span className="text-white/40 text-base font-medium line-through">
                   ₹{priceValue.toLocaleString("en-IN")}
                 </span>
               )}
-              <p className={`font-light text-lg ${hasDiscount ? 'text-rose-400' : 'text-white/60'}`}>
+              <p className={`font-bold text-xl md:text-2xl ${hasDiscount ? 'text-rose-400' : 'text-white/60'}`}>
                 ₹{Math.round(finalPrice).toLocaleString("en-IN")}
               </p>
             </div>

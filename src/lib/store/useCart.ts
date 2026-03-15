@@ -2,13 +2,14 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export interface CartItem {
-  id: string | number; // Support both old numeric IDs and new UUIDs
+  id: string | number;
   name: string;
   price: string | number;
   image: string;
   quantity: number;
-  variantLabel?: string; // e.g. "100ml" or "XL"
+  variantLabel?: string;
   category?: string;
+  volume?: string;
 }
 
 interface CartState {

@@ -11,8 +11,7 @@ import Link from "next/link";
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const categorySlug = params.category as string;
-  const { products, loading } = useShop(categorySlug);
+  const { products, loading } = useShop();
   const { addItem } = useCart();
 
   const product = products.find(p => p.id === Number(params.id));
@@ -42,7 +41,7 @@ export default function ProductDetailPage() {
         transition={{ duration: 0.5 }}
       >
         <Link 
-          href={`/shop/${categorySlug}`}
+          href={`/shop/${params.category}`}
           className="inline-flex items-center gap-4 text-[10px] uppercase tracking-[0.4em] text-white/30 hover:text-white transition-colors group"
         >
           <ArrowLeftIcon className="size-4 transition-transform group-hover:-translate-x-1" />
@@ -76,16 +75,16 @@ export default function ProductDetailPage() {
           >
               <span className="text-white/30 text-[10px] uppercase tracking-[0.5em]">{product.category}</span>
               <h1 className="text-5xl md:text-7xl font-medium leading-none">{product.name}</h1>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-5 flex-wrap">
                 {discount > 0 && (
-                  <span className="text-xl text-white/40 line-through">₹{priceValue.toLocaleString("en-IN")}</span>
+                  <span className="text-3xl text-white/40 font-medium line-through">₹{priceValue.toLocaleString("en-IN")}</span>
                 )}
-                <p className={`text-2xl font-light ${discount > 0 ? 'text-rose-400' : 'text-white/60'}`}>
+                <p className={`text-4xl font-bold ${discount > 0 ? 'text-rose-400' : 'text-white/60'}`}>
                   ₹{Math.round(finalPrice).toLocaleString("en-IN")}
                 </p>
                 {discount > 0 && (
-                  <span className="px-2 py-1 bg-rose-500 text-white text-xs rounded-full">
-                    -{discount}%
+                  <span className="px-5 py-2 bg-rose-600 text-white text-lg font-bold rounded-full shadow-lg shadow-rose-500/30">
+                    -{discount}% OFF
                   </span>
                 )}
               </div>

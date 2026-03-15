@@ -19,7 +19,7 @@ export function useShop(categorySlug?: string) {
           .select("*")
           .eq("is_active", true);
 
-        if (categorySlug) {
+        if (categorySlug && categorySlug !== "all") {
           query = query.eq("category", categorySlug);
         }
 
