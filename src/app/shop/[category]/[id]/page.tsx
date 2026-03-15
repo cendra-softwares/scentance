@@ -4,25 +4,38 @@ import { useShop } from "@/lib/hooks/useShop";
 import { useCart } from "@/lib/store/useCart";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import { ChevronDown, Plus, Sparkles, CircleCheck } from "lucide-react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { ChevronDown, Sparkles, CircleCheck } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ProductDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const { products, loading } = useShop();
   const { addItem, setForceCartUp } = useCart();
   const [isAddButtonVisible, setIsAddButtonVisible] = useState(true);
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragConstraints, setDragConstraints] = useState({ left: 0, right: 0 });
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const product = products.find(p => p.id === Number(params.id));
 
-  const similarProducts = products
-    .filter(p => p.category === product?.category && p.id !== product?.id)
-    .slice(0, 6);
+  const similarProducts = useMemo(() => 
+    products.filter(p => p.category === product?.category && p.id !== product?.id).slice(0, 6),
+    [products, product]
+  );
+
+  useEffect(() => {
+    if (scrollRef.current && similarProducts.length > 0) {
+      const scrollWidth = scrollRef.current.scrollWidth;
+      const containerWidth = scrollRef.current.offsetWidth;
+      setDragConstraints({ left: -(scrollWidth - containerWidth), right: 0 });
+    }
+  }, [similarProducts, product]);
 
   useEffect(() => {
     const checkButtonVisibility = () => {
@@ -137,7 +150,7 @@ export default function ProductDetailPage() {
 
               {product.volume && (
                 <div className="space-y-2">
-                  <h4 className="text-[10px] uppercase tracking-[0.3em] text-white/20">Volume</h4>
+                  <h4 className="text-[10px] uppercase tracking-[0.3em] text-white/50">Volume</h4>
                   <p className="text-white/60">{product.volume} ml</p>
                 </div>
               )}
@@ -190,49 +203,49 @@ export default function ProductDetailPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-6 py-6">
                 {product.top_note && (
                   <div className="space-y-1">
-                    <span className="text-[9px] uppercase tracking-widest text-white/20">Top Note</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/50">Top Note</span>
                     <p className="text-white/60 text-sm">{product.top_note}</p>
                   </div>
                 )}
                 {product.middle_note && (
                   <div className="space-y-1">
-                    <span className="text-[9px] uppercase tracking-widest text-white/20">Middle Note</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/50">Middle Note</span>
                     <p className="text-white/60 text-sm">{product.middle_note}</p>
                   </div>
                 )}
                 {product.bottom_note && (
                   <div className="space-y-1">
-                    <span className="text-[9px] uppercase tracking-widest text-white/20">Bottom Note</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/50">Bottom Note</span>
                     <p className="text-white/60 text-sm">{product.bottom_note}</p>
                   </div>
                 )}
                 {product.fragrance_type && (
                   <div className="space-y-1">
-                    <span className="text-[9px] uppercase tracking-widest text-white/20">Fragrance</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/50">Fragrance</span>
                     <p className="text-white/60 text-sm">{product.fragrance_type}</p>
                   </div>
                 )}
                 {product.product_type && (
                   <div className="space-y-1">
-                    <span className="text-[9px] uppercase tracking-widest text-white/20">Type</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/50">Type</span>
                     <p className="text-white/60 text-sm">{product.product_type}</p>
                   </div>
                 )}
                 {product.strength && (
                   <div className="space-y-1">
-                    <span className="text-[9px] uppercase tracking-widest text-white/20">Strength</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/50">Strength</span>
                     <p className="text-white/60 text-sm">{product.strength}</p>
                   </div>
                 )}
                 {product.sustainable && (
                   <div className="space-y-1">
-                    <span className="text-[9px] uppercase tracking-widest text-white/20">Sustainable</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/50">Sustainable</span>
                     <p className="text-white/60 text-sm">{product.sustainable}</p>
                   </div>
                 )}
                 {product.preferences && (
                   <div className="space-y-1">
-                    <span className="text-[9px] uppercase tracking-widest text-white/20">Preferences</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/50">Preferences</span>
                     <p className="text-white/60 text-sm">{product.preferences}</p>
                   </div>
                 )}
@@ -255,8 +268,16 @@ export default function ProductDetailPage() {
             <h2 className="text-[10px] uppercase tracking-[0.3em] text-white/60">You May Also Like</h2>
           </div>
 
-          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-            <div className="flex gap-6 pb-4" style={{ scrollSnapType: 'x mandatory' }}>
+          <div ref={scrollRef} className="overflow-hidden cursor-grab active:cursor-grabbing -mx-4 px-4 select-none">
+            <motion.div 
+              className="flex gap-6 pb-4 select-none"
+              drag="x"
+              dragConstraints={dragConstraints}
+              dragElastic={0.1}
+              dragTransition={{ bounceDamping: 20 }}
+              onDragStart={() => setIsDragging(true)}
+              onDragEnd={() => setTimeout(() => setIsDragging(false), 150)}
+            >
               {similarProducts.map((similarProduct, index) => {
                 const simPriceValue = parseFloat(similarProduct.price.replace(/,/g, '')) || 0;
                 const simDiscount = similarProduct.discount_percent || 0;
@@ -268,39 +289,33 @@ export default function ProductDetailPage() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
-                    className="flex-shrink-0 w-[280px] md:w-[320px]"
+                    className="flex-shrink-0 w-[280px] md:w-[320px] cursor-pointer"
                     style={{ scrollSnapAlign: 'start' }}
+                    onClick={() => {
+                      if (!isDragging) {
+                        router.push(`/shop/${similarProduct.category.toLowerCase()}/${similarProduct.id}`);
+                      }
+                    }}
                   >
-                    <Link href={`/shop/${similarProduct.category.toLowerCase()}/${similarProduct.id}`}>
-                      <div className="group relative aspect-[4/5] rounded-[2rem] overflow-hidden bg-neutral-900 mb-4">
-                        <Image
-                          src={similarProduct.image}
-                          alt={similarProduct.name}
-                          fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        
-                        {similarProduct.discount_percent && similarProduct.discount_percent > 0 && (
-                          <div className="absolute top-4 left-4 px-3 py-1 bg-rose-600 text-white text-xs font-bold rounded-full">
-                            -{similarProduct.discount_percent}%
-                          </div>
-                        )}
-
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleAddToCart(similarProduct.id, similarProduct.name, similarProduct.price, similarProduct.image, similarProduct.volume);
-                          }}
-                          className="absolute bottom-4 right-4 w-12 h-12 bg-white text-black rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 hover:bg-neutral-200"
-                        >
-                          <Plus className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </Link>
+                    <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden bg-neutral-900 mb-4 select-none">
+                      <Image
+                        src={similarProduct.image}
+                        alt={similarProduct.name}
+                        fill
+                        className="object-cover"
+                        draggable={false}
+                        unoptimized
+                      />
+                      
+                      {similarProduct.discount_percent && similarProduct.discount_percent > 0 && (
+                        <div className="absolute top-4 left-4 px-3 py-1 bg-rose-600 text-white text-xs font-bold rounded-full">
+                          -{similarProduct.discount_percent}%
+                        </div>
+                      )}
+                    </div>
 
                     <div className="space-y-2">
-                      <span className="text-white/20 text-[8px] uppercase tracking-[0.3em]">{similarProduct.category}</span>
+                      <span className="text-white/50 text-[9px] uppercase tracking-[0.3em]">{similarProduct.category}</span>
                       <h3 className="text-lg font-medium truncate">{similarProduct.name}</h3>
                       <div className="flex items-center gap-2">
                         {simDiscount > 0 && (
@@ -314,7 +329,7 @@ export default function ProductDetailPage() {
                   </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           </div>
         </motion.div>
       )}
