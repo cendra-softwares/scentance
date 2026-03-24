@@ -11,6 +11,7 @@ import {
   UpdateOrderStatusSchema,
   CreateProductSchema,
   UpdateProductSchema,
+  ContactFormSchema,
   type CreateOrderInput,
 } from '@/lib/schemas';
 import type { Product } from '@/lib/types';
@@ -366,6 +367,66 @@ export async function deleteProduct(id: number) {
 
   // Log the admin action
   await logAuditEvent('delete_product', 'product', String(id));
+
+  return { success: true };
+}
+
+// ─── Contact Form Action ───────────────────────────────────────────────────────
+
+export async function submitContactForm(
+  rawData: unknown
+): Promise<{ success: true } | { success: false; error: string }> {
+  // 1. Validate input
+  const parsed = ContactFormSchema.safeParse(rawData);
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0]?.message ?? 'Invalid input';
+    return errorResponse(firstError);
+  }
+
+  const { name, email, message } = parsed.data;
+
+  // 2. Store in database (optional - can also just send email)
+  const supabase = await createClient();
+  const { error: insertError } = await supabase.from('contact_messages').insert({
+    name,
+    email,
+    message,
+  });
+
+  if (insertError) {
+    console.error('Error storing contact message:', insertError);
+    // Don't fail - still try to send confirmation email
+  }
+
+  // 3. Send confirmation email to customer
+  try {
+    await resend.emails.send({
+      from: 'Scentence <support@scentenceparfum.com>',
+      to: [email],
+      subject: 'Thank you for contacting Scentence',
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #1a1a1a;">Thank you, ${name}!</h1>
+          <p style="color: #4a4a4a; line-height: 1.6;">
+            We have received your message and will get back to you within 24-48 hours.
+          </p>
+          <p style="color: #4a4a4a; line-height: 1.6;">
+            Here's a copy of your message:
+          </p>
+          <blockquote style="background: #f5f5f5; padding: 15px; border-left: 4px solid #8b5cf6; margin: 20px 0;">
+            ${message}
+          </blockquote>
+          <p style="color: #6a6a6a; font-size: 14px;">
+            Best regards,<br/>
+            The Scentence Team
+          </p>
+        </div>
+      `,
+    });
+  } catch (emailError) {
+    console.error('Error sending contact confirmation email:', emailError);
+    // Don't fail - message was stored
+  }
 
   return { success: true };
 }

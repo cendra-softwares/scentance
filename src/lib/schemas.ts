@@ -111,3 +111,22 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
 
   return { valid: true };
 }
+
+// ─── Contact Form Schema ─────────────────────────────────────────────────────
+
+export const ContactFormSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .max(100, 'Name too long')
+    .regex(/^[a-zA-Z\s'-]+$/, 'Name can only contain letters, spaces, hyphens, and apostrophes')
+    .trim(),
+  email: z.string().email('Invalid email address').max(254, 'Email too long'),
+  message: z
+    .string()
+    .min(10, 'Message too short (minimum 10 characters)')
+    .max(2000, 'Message too long (maximum 2000 characters)')
+    .trim(),
+});
+
+export type ContactFormInput = z.infer<typeof ContactFormSchema>;

@@ -146,7 +146,7 @@ export const OrderReceivedEmail: React.FC<Readonly<OrderReceivedEmailProps>> = (
     </div>
 
     <div style={{ textAlign: 'center', marginTop: '40px', color: '#71717a', fontSize: '12px' }}>
-      <p>© 2024 Scentence. All rights reserved.</p>
+      <p>&copy; {new Date().getFullYear()} Scentence. All rights reserved.</p>
       <p>If you have any questions, please contact us at Scentence.in@gmail.com</p>
     </div>
   </div>

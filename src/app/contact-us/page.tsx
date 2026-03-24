@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaInstagram, FaWhatsapp } from 'react-icons/fa';
 import { MdOutlineMail, MdLocationOn } from "react-icons/md";
@@ -8,8 +8,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { submitContactForm } from '@/lib/actions';
+import { toast } from 'sonner';
 
 export default function ContactUs() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(formData: FormData) {
+    setIsSubmitting(true);
+    
+    const result = await submitContactForm({
+      name: formData.get('name'),
+      email: formData.get('email'),
+      message: formData.get('message'),
+    });
+
+    setIsSubmitting(false);
+
+    if (result.success) {
+      toast.success('Message sent! We\'ll get back to you soon.');
+      // Reset form
+      (document.getElementById('contact-form') as HTMLFormElement)?.reset();
+    } else {
+      toast.error(result.error || 'Failed to send message. Please try again.');
+    }
+  }
+
   return (
     <div className="min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
       <motion.div
@@ -65,24 +89,51 @@ export default function ContactUs() {
 
           {/* Contact Form */}
           <div className="bg-neutral-900/40 p-8 rounded-3xl border border-neutral-800 backdrop-blur-md">
-            <form className="space-y-6">
+            <form id="contact-form" action={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-neutral-300">Full Name</Label>
-                <Input id="name" placeholder="John Doe" className="bg-black/20 border-neutral-800" />
+                <Input 
+                  id="name" 
+                  name="name"
+                  placeholder="John Doe" 
+                  required
+                  minLength={1}
+                  maxLength={100}
+                  className="bg-black/20 border-neutral-800" 
+                />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-neutral-300">Email Address</Label>
-                <Input id="email" type="email" placeholder="john@example.com" className="bg-black/20 border-neutral-800" />
+                <Input 
+                  id="email" 
+                  name="email"
+                  type="email" 
+                  placeholder="john@example.com" 
+                  required
+                  className="bg-black/20 border-neutral-800" 
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="message" className="text-neutral-300">Your Message</Label>
-                <Textarea id="message" placeholder="How can we help you?" className="bg-black/20 border-neutral-800 min-h-[150px]" />
+                <Textarea 
+                  id="message" 
+                  name="message"
+                  placeholder="How can we help you?" 
+                  required
+                  minLength={10}
+                  maxLength={2000}
+                  className="bg-black/20 border-neutral-800 min-h-[150px]" 
+                />
               </div>
 
-              <Button className="w-full bg-white text-black hover:bg-neutral-200 transition-colors font-medium py-6 rounded-xl">
-                Send Message
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full bg-white text-black hover:bg-neutral-200 transition-colors font-medium py-6 rounded-xl disabled:opacity-50"
+              >
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </Button>
             </form>
           </div>
