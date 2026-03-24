@@ -36,13 +36,13 @@ export default function ShopLayout({
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center">
             <HeaderBackButton />
-            <Link href="/" className="text-2xl font-bold tracking-widest hover:opacity-70 transition-opacity">
+            <Link href="/shop" className="text-2xl font-bold tracking-widest hover:opacity-70 transition-opacity">
               SCENTENCE
             </Link>
           </div>
           
           <nav className="hidden md:flex items-center gap-12 text-[10px] uppercase tracking-[0.3em] font-medium text-white/50">
-            <Link href="/shop/perfumes" className="hover:text-white transition-colors">Perfumes</Link>
+            <Link href="/shop" className="hover:text-white transition-colors">Perfumes</Link>
             <Link href="/shop/apparel" className="hover:text-white transition-colors">Apparel</Link>
             <Link href="/shop/accessories" className="hover:text-white transition-colors">Accessories</Link>
           </nav>

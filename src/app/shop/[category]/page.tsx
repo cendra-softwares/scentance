@@ -9,7 +9,9 @@ import { ProductCard } from "@/components/shop/product-card";
 export default function CategoryPage() {
   const params = useParams();
   const categorySlug = params.category as string;
-  const { products, loading } = useShop(categorySlug);
+  // Show all products for "perfumes" category (same as /shop)
+  const effectiveCategory = categorySlug === "perfumes" ? undefined : categorySlug;
+  const { products, loading } = useShop(effectiveCategory);
   
   const isComingSoon = categorySlug === "apparel" || categorySlug === "accessories";
 
