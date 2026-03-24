@@ -42,3 +42,9 @@ next-env.d.ts
 
 # opencode
 .opencode/
+
+# confidential research & integration docs
+RAZORPAY_INTEGRATION_RESEARCH.md
+PHONEPE_INTEGRATION_RESEARCH.md
+PAYMENT_*.md
+SECURITY-AUDIT.md

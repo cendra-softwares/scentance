@@ -5,11 +5,13 @@ export interface CartItem {
   id: string | number;
   name: string;
   price: string | number;
+  originalPrice?: string | number;
   image: string;
   quantity: number;
   variantLabel?: string | null;
   category?: string;
   volume?: string | null;
+  discountPercent?: number;
 }
 
 interface CartState {
@@ -31,12 +33,14 @@ interface CartItemInput {
   id: string | number;
   name: string;
   price?: string | number;
+  originalPrice?: string | number;
   image?: string;
   base_price?: string | number;
   featured_image?: string;
   volume?: string | null;
   variantLabel?: string | null;
   category?: string | { name?: string } | null;
+  discount_percent?: number;
 }
 
 export const useCart = create<CartState>()(
@@ -64,10 +68,12 @@ export const useCart = create<CartState>()(
             id: item.id,
             name: item.name || 'Unknown Product',
             price: item.price || item.base_price || 0,
+            originalPrice: item.originalPrice || item.base_price || item.price || 0,
             image: item.image || item.featured_image || '',
             quantity: 1,
             variantLabel: item.volume || item.variantLabel || undefined,
-            category: categoryValue || undefined
+            category: categoryValue || undefined,
+            discountPercent: item.discount_percent || undefined
           };
           set({ items: [...items, newItem] });
         }

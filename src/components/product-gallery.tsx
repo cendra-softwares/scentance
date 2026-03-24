@@ -138,7 +138,12 @@ function ProductCard({ product, index, spanClass }: { product: Product, index: n
                    <Button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      addItem(product);
+                      addItem({
+                        ...product,
+                        price: String(Math.round(finalPrice)),
+                        originalPrice: product.price,
+                        discount_percent: product.discount_percent
+                      });
                     }}
                     className="flex-1 bg-white text-black hover:bg-neutral-200 rounded-full py-3 font-bold uppercase tracking-widest text-[9px] transition-transform active:scale-[0.98]"
                   >
@@ -166,7 +171,12 @@ function ProductCard({ product, index, spanClass }: { product: Product, index: n
                    <Button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      addItem(product);
+                      addItem({
+                        ...product,
+                        price: String(Math.round(finalPrice)),
+                        originalPrice: product.price,
+                        discount_percent: product.discount_percent
+                      });
                     }}
                     className="flex-1 bg-white text-black hover:bg-neutral-200 rounded-full py-6 font-bold uppercase tracking-widest text-[10px] transition-transform hover:scale-[1.02] active:scale-[0.98]"
                   >
@@ -176,7 +186,12 @@ function ProductCard({ product, index, spanClass }: { product: Product, index: n
                     variant="outline" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      addItem(product);
+                      addItem({
+                        ...product,
+                        price: String(Math.round(finalPrice)),
+                        originalPrice: product.price,
+                        discount_percent: product.discount_percent
+                      });
                     }}
                     className="w-14 h-14 rounded-full border-white/10 bg-white/5 backdrop-blur-md text-white hover:bg-white/20 p-0 text-xl"
                   >

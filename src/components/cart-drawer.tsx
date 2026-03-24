@@ -191,8 +191,20 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="text-white font-medium truncate">{item.name}</h4>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <p className="text-white/40 text-sm">{item.price}</p>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              {item.originalPrice && item.originalPrice !== item.price ? (
+                                <>
+                                  <span className="text-white/30 text-sm line-through">₹{String(item.originalPrice).replace(/[^\d]/g, '')}</span>
+                                  <span className="text-rose-400 text-sm font-medium">₹{String(item.price).replace(/[^\d]/g, '')}</span>
+                                  {item.discountPercent && (
+                                    <span className="bg-rose-500/20 text-rose-400 text-[10px] px-2 py-0.5 rounded-full font-medium">
+                                      -{item.discountPercent}%
+                                    </span>
+                                  )}
+                                </>
+                              ) : (
+                                <p className="text-white/40 text-sm">₹{String(item.price).replace(/[^\d]/g, '')}</p>
+                              )}
                               {item.volume && (
                                 <>
                                   <span className="w-1 h-1 rounded-full bg-white/10" />

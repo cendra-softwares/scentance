@@ -85,6 +85,8 @@ export default function ProductDetailPage() {
       id: productId,
       name: productName,
       price: discountedPrice,
+      originalPrice: productPrice,
+      discount_percent: product?.discount_percent,
       image: productImage,
       volume: productVolume
     });
