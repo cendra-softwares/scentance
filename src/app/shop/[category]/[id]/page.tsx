@@ -22,7 +22,11 @@ export default function ProductDetailPage() {
   const [dragConstraints, setDragConstraints] = useState({ left: 0, right: 0 });
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const product = products.find(p => p.id === Number(params.id));
+  // Validate route params - ensure ID is a valid positive number
+  const productId = Number(params.id);
+  const isValidProductId = Number.isInteger(productId) && productId > 0;
+
+  const product = isValidProductId ? products.find(p => p.id === productId) : undefined;
 
   const similarProducts = useMemo(() => 
     products.filter(p => p.category === product?.category && p.id !== product?.id).slice(0, 6),
@@ -67,7 +71,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  if (!product) {
+  if (!product || !isValidProductId) {
     return <div className="text-center py-40 text-white/40">Product not found.</div>;
   }
 

@@ -435,7 +435,16 @@ export function OrdersDashboard({ initialOrders }: OrdersDashboardProps) {
     doc.setTextColor(148, 163, 184); // Slate-400
     doc.text("Please handle with care. Fragile items inside.", 14, finalY);
     
-    doc.save(`shipping_${order.customer_name.replace(/\s+/g, '_')}_${order.id.slice(0,8)}.pdf`);
+    // Sanitize filename - remove/replace special characters
+    const sanitizeFilename = (name: string): string => {
+      return name
+        .replace(/[^a-zA-Z0-9]/g, '_')  // Replace non-alphanumeric with underscore
+        .replace(/_+/g, '_')              // Collapse multiple underscores
+        .replace(/^_|_$/g, '');           // Trim leading/trailing underscores
+    };
+
+    const safeCustomerName = sanitizeFilename(order.customer_name || 'customer');
+    doc.save(`shipping_${safeCustomerName}_${order.id.slice(0,8)}.pdf`);
   };
 
   const statusColors: Record<string, string> = {

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/auth';
+import { logAuditEvent } from '@/lib/audit';
 import { Resend } from 'resend';
 import { OrderReceivedEmail } from '@/components/emails/order-received';
 import { OrderConfirmedEmail } from '@/components/emails/order-confirmed';
@@ -176,6 +177,14 @@ export async function updateOrderStatus(orderId: string, status: string) {
     return errorResponse('Order not found');
   }
 
+  // Log the admin action
+  await logAuditEvent(
+    'update_order_status',
+    'order',
+    parsed.data.orderId,
+    { new_status: parsed.data.status }
+  );
+
   return { success: true };
 }
 
@@ -221,6 +230,10 @@ export async function sendOrderConfirmationEmail(orderId: string) {
         />
       ),
     });
+
+    // Log the admin action
+    await logAuditEvent('send_confirmation_email', 'order', orderId, { recipient: order.email });
+
     return { success: true };
   } catch (emailError) {
     console.error('Error sending confirmation email:', emailError);
@@ -255,6 +268,9 @@ export async function deleteOrder(orderId: string) {
     return errorResponse('Order not found');
   }
 
+  // Log the admin action
+  await logAuditEvent('delete_order', 'order', orderId);
+
   return { success: true };
 }
 
@@ -284,6 +300,9 @@ export async function createProduct(rawProduct: unknown): Promise<{ success: tru
     console.error('Error creating product:', error);
     return errorResponse('Failed to create product');
   }
+
+  // Log the admin action
+  await logAuditEvent('create_product', 'product', String(data.id), { name: data.name });
 
   return { success: true, product: data };
 }
@@ -317,6 +336,9 @@ export async function updateProduct(id: number, rawUpdates: Record<string, unkno
     return errorResponse('Failed to update product');
   }
 
+  // Log the admin action
+  await logAuditEvent('update_product', 'product', String(id), { updates: rawUpdates });
+
   return { success: true, product: data };
 }
 
@@ -341,6 +363,9 @@ export async function deleteProduct(id: number) {
     console.error('Error deleting product:', error);
     return errorResponse('Failed to delete product');
   }
+
+  // Log the admin action
+  await logAuditEvent('delete_product', 'product', String(id));
 
   return { success: true };
 }

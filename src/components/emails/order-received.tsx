@@ -1,9 +1,16 @@
 import * as React from 'react';
 
+interface EmailOrderItem {
+  name: string;
+  quantity: number;
+  price: string;
+  volume?: string | null;
+}
+
 interface OrderReceivedEmailProps {
   customerName: string;
   orderId: string;
-  items: any[];
+  items: EmailOrderItem[];
   totalAmount: number;
   shippingAddress: {
     address: string;

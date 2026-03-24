@@ -303,14 +303,18 @@
 
 **Files changed:** `next.config.ts`, `src/app/login/page.tsx`, `src/lib/hooks/useProducts.ts`, `src/lib/hooks/useShop.ts`, `src/lib/hooks/useAttributes.ts`, `src/components/dashboard/orders-dashboard.tsx`, package.json
 
-### Phase 3 — Medium Priority
+### ✅ Phase 3 — Medium Priority — COMPLETED (March 24, 2026)
 
-15. Add status allowlist validation on `updateOrderStatus`
-16. Sanitize PDF filenames
-17. Validate dynamic route params
-18. Add audit logging for admin mutations
-19. Remove debug `console.log` statements
-20. Type email template props properly
+15. ✅ **Status allowlist validation** — Already implemented in Phase 1 via Zod schema (`VALID_ORDER_STATUSES`)
+16. ✅ **Sanitize PDF filenames** — Added `sanitizeFilename()` function to remove special characters from customer names in shipping PDF exports
+17. ✅ **Validate dynamic route params** — Added `isValidProductId` check using `Number.isInteger()` and positive validation in product detail page
+18. ✅ **Audit logging for admin mutations** — Created `audit_logs` table and `logAuditEvent()` helper, integrated into all admin server actions (updateOrderStatus, deleteOrder, createProduct, updateProduct, deleteProduct, sendOrderConfirmationEmail)
+19. ✅ **Remove debug console.log** — Already completed in Phase 2
+20. ✅ **Type email template props properly** — Replaced `any[]` with proper `EmailOrderItem` interface in both email components
+
+**Database:** Created `audit_logs` table with RLS policies (admins can view, service role can insert)
+
+**Files changed:** `src/lib/audit.ts` (new), `src/lib/actions.tsx`, `src/components/emails/order-received.tsx`, `src/components/emails/order-confirmed.tsx`, `src/components/dashboard/orders-dashboard.tsx`, `src/app/shop/[category]/[id]/page.tsx`
 
 ### Phase 4 — Low Priority / Cleanup
 
@@ -321,4 +325,4 @@
 
 ---
 
-*Audit conducted on March 24, 2026. Phase 1 completed — see git branch `security/phase-1-critical-fixes`.*
+*Audit conducted on March 24, 2026. Phase 3 completed — see git branch `security/phase-3-medium-hardening`.*
