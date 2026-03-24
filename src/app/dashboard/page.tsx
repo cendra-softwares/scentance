@@ -2,20 +2,15 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { OverviewDashboard } from "@/components/dashboard/overview-dashboard"
-import { createClient } from "@/lib/supabase/server"
+import { requireAdmin } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const supabase = await createClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    redirect("/login");
-  }
+  const auth = await requireAdmin();
+  if (!auth) redirect("/login");
 
   return (
     <TooltipProvider>

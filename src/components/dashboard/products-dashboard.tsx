@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createProduct, updateProduct, deleteProduct } from "@/lib/actions";
+import { validateImageFile, ALLOWED_IMAGE_TYPES, MAX_FILE_SIZE } from "@/lib/schemas";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
@@ -42,7 +43,7 @@ export function ProductsDashboard({ initialProducts }: ProductsDashboardProps) {
     const result = await deleteProduct(id);
     if (result.success) {
       setProducts(prev => prev.filter(p => p.id !== id));
-    } else {
+    } else if ('error' in result) {
       alert("Error: " + result.error);
     }
     setIsLoading(false);
@@ -238,16 +239,29 @@ function ProductForm({ product, onClose, onSave }: {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type and size
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      alert(validation.error);
+      e.target.value = '';
+      return;
+    }
+
     setIsUploading(true);
     try {
       const supabase = createClient();
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      // Sanitize extension — only allow known image extensions
+      const rawExt = file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
+      const safeExt = ['jpg', 'jpeg', 'png', 'webp', 'avif'].includes(rawExt) ? rawExt : 'jpg';
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${safeExt}`;
       const filePath = `products/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('product-images')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          contentType: file.type,
+          cacheControl: '3600',
+        });
 
       if (uploadError) throw uploadError;
 
@@ -279,10 +293,12 @@ function ProductForm({ product, onClose, onSave }: {
     try {
       if (product) {
         const result = await updateProduct(product.id, normalizedData);
-        if (result.success) onSave(result.product);
+        if (result.success && 'product' in result) onSave(result.product);
+        else if (!result.success && 'error' in result) alert(result.error);
       } else {
         const result = await createProduct(normalizedData);
-        if (result.success) onSave(result.product);
+        if (result.success && 'product' in result) onSave(result.product);
+        else if (!result.success && 'error' in result) alert(result.error);
       }
     } catch (error) {
       console.error('Error saving product:', error);
@@ -535,10 +551,10 @@ function ProductForm({ product, onClose, onSave }: {
                 )}
               </div>
               <div className="flex-1">
-                <p className="text-xs text-zinc-500 mb-3">Upload a high-quality image of the product.</p>
+                <p className="text-xs text-zinc-500 mb-3">Upload a high-quality image (max 5MB, JPG/PNG/WebP).</p>
                 <input 
                   type="file" 
-                  accept="image/*"
+                  accept={ALLOWED_IMAGE_TYPES.join(',')}
                   onChange={handleImageUpload}
                   className="hidden" 
                   id="image-upload" 
