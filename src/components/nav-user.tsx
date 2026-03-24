@@ -34,6 +34,7 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
 
+  // Client-side logout with @supabase/ssr handles cookie clearing properly
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();

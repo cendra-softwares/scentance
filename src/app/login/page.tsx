@@ -27,7 +27,8 @@ export default function LoginPage() {
     });
 
     if (signInError) {
-      setError(signInError.message);
+      // Normalize error messages to prevent user enumeration
+      setError("Invalid email or password. Please try again.");
     } else {
       setMessage("Signed in successfully! Redirecting...");
       window.location.href = "/dashboard";
@@ -50,7 +51,8 @@ export default function LoginPage() {
     });
 
     if (signUpError) {
-      setError(signUpError.message);
+      // Normalize error messages to prevent internal details leakage
+      setError("Unable to create account. Please try again.");
     } else {
       setMessage("Check your email for the confirmation link!");
     }

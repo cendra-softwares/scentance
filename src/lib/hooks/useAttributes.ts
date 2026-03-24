@@ -19,7 +19,7 @@ export function useAttributes(categorySlug?: string) {
       try {
         const supabase = createClient();
         
-        let query = supabase.from("attribute_definitions").select("*");
+        let query = supabase.from("attribute_definitions").select("id, category_id, name, data_type");
 
         if (categorySlug) {
           // Find category ID
@@ -39,7 +39,7 @@ export function useAttributes(categorySlug?: string) {
         if (error) throw error;
         setAttributes(data || []);
       } catch (err) {
-        console.error("Error fetching attributes:", err);
+        // Silent fail - attributes are optional
       } finally {
         setLoading(false);
       }

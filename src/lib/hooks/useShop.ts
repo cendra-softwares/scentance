@@ -16,7 +16,7 @@ export function useShop(categorySlug?: string) {
         
         let query = supabase
           .from("products")
-          .select("*")
+          .select("id, name, category, notes, price, volume, image, discount_percent, top_note, middle_note, bottom_note, fragrance_type, product_type, strength, sustainable, preferences")
           .eq("is_active", true);
 
         if (categorySlug && categorySlug !== "all") {
@@ -28,7 +28,6 @@ export function useShop(categorySlug?: string) {
         if (prodError) throw prodError;
         setProducts(prodData || []);
       } catch (err: any) {
-        console.error("Error fetching shop data:", err);
         setError(err.message);
       } finally {
         setLoading(false);

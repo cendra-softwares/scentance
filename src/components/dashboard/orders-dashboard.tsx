@@ -25,7 +25,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Papa from "papaparse";
 import { jsPDF } from "jspdf";
 import { applyPlugin } from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 // Initialize the plugin
 applyPlugin(jsPDF);
@@ -269,7 +269,7 @@ export function OrdersDashboard({ initialOrders }: OrdersDashboardProps) {
     document.body.removeChild(link);
   };
 
-  const exportExcel = () => {
+  const exportExcel = async () => {
     const dataToExport = getOrdersToExport();
     const data = dataToExport.flatMap(o => 
       o.order_items?.map(item => ({
@@ -286,10 +286,42 @@ export function OrdersDashboard({ initialOrders }: OrdersDashboardProps) {
       })) || []
     );
 
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
-    XLSX.writeFile(workbook, `orders_${exportScope}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Orders');
+    
+    // Add headers
+    worksheet.columns = [
+      { header: 'OrderID', key: 'OrderID', width: 40 },
+      { header: 'Date', key: 'Date', width: 12 },
+      { header: 'Customer', key: 'Customer', width: 20 },
+      { header: 'Phone', key: 'Phone', width: 15 },
+      { header: 'Product', key: 'Product', width: 25 },
+      { header: 'Price', key: 'Price', width: 10 },
+      { header: 'Qty', key: 'Qty', width: 8 },
+      { header: 'TotalAmount', key: 'TotalAmount', width: 12 },
+      { header: 'Address', key: 'Address', width: 40 },
+      { header: 'Status', key: 'Status', width: 12 },
+    ];
+    
+    // Add rows
+    data.forEach(row => worksheet.addRow(row));
+    
+    // Style header row
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF33365C' }
+    };
+    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    
+    // Generate and download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `orders_${exportScope}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    link.click();
   };
 
   const exportPDF = () => {

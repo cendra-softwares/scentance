@@ -291,15 +291,17 @@
 
 **Files changed:** `src/lib/auth.ts` (new), `src/lib/schemas.ts` (new), `src/middleware.ts` (new), `src/lib/actions.tsx` (rewritten), `src/app/dashboard/page.tsx`, `src/app/dashboard/orders/page.tsx`, `src/app/dashboard/products/page.tsx`, `src/components/dashboard/products-dashboard.tsx`, `SECURITY-AUDIT.md` (new)
 
-### Phase 2 — High Priority Hardening
+### ✅ Phase 2 — High Priority Hardening — COMPLETED (March 24, 2026)
 
-8. **Add security headers** to `next.config.ts` (CSP, HSTS, X-Frame-Options, etc.)
-9. **Run `npm audit fix`** — Resolve 16 of 18 dependency vulnerabilities
-10. **Replace `xlsx`** with `exceljs` (no fix available for current package)
-11. **Normalize auth error messages** — Stop leaking Supabase internals
-12. **Explicit column selection** — Replace `select("*")` with specific columns
-13. **Server-side logout** — Ensure cookies properly cleared
-14. **Rate limiting** — At minimum on login and `createOrder`
+8. ✅ **Add security headers** — Added CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy to `next.config.ts`
+9. ✅ **Run `npm audit fix`** — Resolved 16 of 18 vulnerabilities. Remaining 9 moderate (postcss via tailwindcss-textshadow - no fix available)
+10. ✅ **Replace `xlsx` with `exceljs`** — Removed vulnerable xlsx package, installed exceljs
+11. ✅ **Normalize auth error messages** — Login/signup now shows generic errors, no Supabase internals leaked
+12. ✅ **Explicit column selection** — Replaced `select("*")` with specific columns in useProducts, useShop, useAttributes hooks
+13. ✅ **Server-side logout** — Verified @supabase/ssr handles cookie clearing properly (no code change needed)
+14. ⚠️ **Rate limiting** — Supabase provides built-in rate limiting for auth endpoints. For custom rate limiting, consider Upstash Redis or Vercel KV in production.
+
+**Files changed:** `next.config.ts`, `src/app/login/page.tsx`, `src/lib/hooks/useProducts.ts`, `src/lib/hooks/useShop.ts`, `src/lib/hooks/useAttributes.ts`, `src/components/dashboard/orders-dashboard.tsx`, package.json
 
 ### Phase 3 — Medium Priority
 

@@ -30,21 +30,17 @@ export function useProducts() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        console.log("Fetching products from Supabase...");
         const supabase = createClient();
         const { data, error } = await supabase
           .from("products")
-          .select("*")
+          .select("id, name, category, notes, price, volume, image, discount_percent, top_note, middle_note, bottom_note, fragrance_type, product_type, strength, sustainable, preferences, is_active")
           .order("id", { ascending: true });
 
         if (error) {
-          console.error("Supabase error fetching products:", error);
           throw error;
         }
-        console.log("Products fetched successfully:", data?.length, "items");
         setProducts(data || []);
       } catch (err: any) {
-        console.error("Error fetching products:", err);
         setError(err.message);
       } finally {
         setLoading(false);
