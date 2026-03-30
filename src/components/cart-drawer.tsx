@@ -187,7 +187,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       {items.map((item) => (
                         <div key={item.id} className="flex gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 group">
                           <div className="relative h-20 w-20 rounded-xl overflow-hidden flex-shrink-0">
-                            <Image src={item.image} alt={item.name} fill className="object-cover" />
+                            <Image src={item.image} alt={item.name} fill className="object-cover" sizes="80px" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="text-white font-medium truncate">{item.name}</h4>

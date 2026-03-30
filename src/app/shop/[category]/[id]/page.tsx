@@ -116,6 +116,10 @@ export default function ProductDetailPage() {
             alt={product.name}
             fill
             className="object-cover"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            priority
+            loading="eager"
+            fetchPriority="high"
           />
         </motion.div>
 
@@ -311,6 +315,7 @@ export default function ProductDetailPage() {
                         className="object-cover"
                         draggable={false}
                         unoptimized
+                        sizes="(max-width: 768px) 280px, 320px"
                       />
                       
                       {similarProduct.discount_percent && similarProduct.discount_percent > 0 && (

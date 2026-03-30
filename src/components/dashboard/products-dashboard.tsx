@@ -540,7 +540,7 @@ function ProductForm({ product, onClose, onSave }: {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex items-center justify-center">
                 {formData.image ? (
-                  <Image src={formData.image} alt="Preview" fill className="object-cover" />
+                  <Image src={formData.image} alt="Preview" fill className="object-cover" sizes="96px" />
                 ) : (
                   <ImageIcon size={28} className="text-zinc-300" />
                 )}
