@@ -28,7 +28,7 @@ interface AuthContextType {
   profile: UserProfile | null;
   isGuest: boolean;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: string | null; profile: UserProfile | null }>;
   signUp: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   continueAsGuest: (email?: string) => Promise<void>;
@@ -137,17 +137,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
     
     if (error) {
-      return { error: error.message };
+      return { error: error.message, profile: null };
+    }
+    
+    // Fetch user profile to determine role
+    let profile: UserProfile | null = null;
+    if (data?.user) {
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", data.user.id)
+        .single();
+      
+      if (profileData) {
+        profile = profileData as UserProfile;
+      }
     }
     
     // Clear guest session on successful login
     localStorage.removeItem(GUEST_TOKEN_KEY);
     setIsGuest(false);
     
-    return { error: null };
+    return { error: null, profile };
   };
 
   const signUp = async (email: string, password: string) => {

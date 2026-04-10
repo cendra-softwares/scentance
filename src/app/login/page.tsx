@@ -22,13 +22,18 @@ export default function LoginPage() {
     setError(null);
     setMessage(null);
 
-    const { error: signInError } = await signIn(email, password);
+    const { error: signInError, profile } = await signIn(email, password);
 
     if (signInError) {
       setError("Invalid email or password. Please try again.");
     } else {
       setMessage("Signed in successfully! Redirecting...");
-      window.location.href = "/dashboard";
+      // Redirect based on user role
+      if (profile?.role === "admin") {
+        window.location.href = "/dashboard";
+      } else {
+        window.location.href = "/";
+      }
     }
 
     setLoading(false);
