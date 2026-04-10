@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { Eye, EyeOff, Mail, Lock, ArrowLeft, User } from "lucide-react";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -13,21 +14,17 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
+  const { signIn, signUp, continueAsGuest } = useAuth();
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setMessage(null);
 
-    const supabase = createClient();
-
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error: signInError } = await signIn(email, password);
 
     if (signInError) {
-      // Normalize error messages to prevent user enumeration
       setError("Invalid email or password. Please try again.");
     } else {
       setMessage("Signed in successfully! Redirecting...");
@@ -43,21 +40,21 @@ export default function LoginPage() {
     setError(null);
     setMessage(null);
 
-    const supabase = createClient();
-
-    const { error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    const { error: signUpError } = await signUp(email, password);
 
     if (signUpError) {
-      // Normalize error messages to prevent internal details leakage
       setError("Unable to create account. Please try again.");
     } else {
       setMessage("Check your email for the confirmation link!");
     }
 
     setLoading(false);
+  };
+
+  const handleGuestContinue = async () => {
+    setLoading(true);
+    await continueAsGuest();
+    window.location.href = "/shop";
   };
 
   return (
@@ -101,6 +98,8 @@ export default function LoginPage() {
                   className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
                   placeholder="you@example.com"
                   required
+                  autoComplete="off"
+                  data-temp-mail-org="0"
                 />
               </div>
             </div>
@@ -140,7 +139,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6">
+          <div className="mt-6 space-y-3">
             <button
               type="button"
               onClick={handleSignUp}
@@ -148,6 +147,23 @@ export default function LoginPage() {
               className="w-full bg-transparent border border-white/20 text-white py-3 rounded-lg hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Processing..." : "Create Account"}
+            </button>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-white/10"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-neutral-900 px-2 text-white/30">Or</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleGuestContinue}
+              disabled={loading}
+              className="w-full bg-white/5 border border-white/10 text-white/70 py-3 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <User className="w-4 h-4" />
+              Continue as Guest
             </button>
           </div>
         </div>

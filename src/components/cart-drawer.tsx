@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, X, Plus, Minus, CheckCircle, ArrowRight, Truck, AlertCircle } from "lucide-react";
+import { ShoppingBag, X, Plus, Minus, CheckCircle, ArrowRight, Truck, AlertCircle, LogIn } from "lucide-react";
 import { useCart } from "@/lib/store/useCart";
+import { useAuth } from "@/lib/auth-context";
 import { Button } from "./ui/button";
 import Image from "next/image";
+import Link from "next/link";
 import { createOrder } from "@/lib/actions";
+import { toast } from "sonner";
 
 interface FormErrors {
   name?: string;
@@ -70,17 +73,26 @@ interface CartDrawerProps {
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
+  const { user, isGuest } = useAuth();
   const [step, setStep] = useState<"cart" | "checkout" | "success">("cart");
   const [orderId, setOrderId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
+    email: user?.email || "",
     phone: "",
     address: "",
     city: "",
     state: "",
     pincode: "",
   });
+
+  // Update email if user logs in
+  useEffect(() => {
+    if (user?.email) {
+      setFormData(prev => ({ ...prev, email: user.email! }));
+    }
+  }, [user]);
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -109,19 +121,21 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       items,
       customer_name: formData.name,
       email: formData.email,
-      phone: formData.phone,
+      phone: formData.phone.replace(/\D/g, ''),
       address: formData.address,
       city: formData.city,
       state: formData.state,
       pincode: formData.pincode,
+      user_id: user?.id,
     });
 
     if (result.success) {
       setOrderId(result.orderId);
       setStep("success");
       clearCart();
+      toast.success("Order confirmed successfully!");
     } else {
-      alert("Something went wrong. Please try again.");
+      toast.error(result.error || "Something went wrong. Please try again.");
     }
     setIsSubmitting(false);
   };
@@ -242,7 +256,25 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               )}
 
               {step === "checkout" && (
-                <form id="checkout-form" onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-6">
+                  {!user && (
+                    <div className="bg-white/5 p-6 rounded-2xl border border-white/5 flex flex-col items-center text-center gap-4">
+                      <div>
+                        <h4 className="text-white text-sm font-medium">Have an account?</h4>
+                        <p className="text-white/40 text-xs mt-1">
+                          Log in to save your shipping details and earn rewards.
+                        </p>
+                      </div>
+                      <Link 
+                        href="/login" 
+                        className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold uppercase tracking-widest py-3 rounded-xl transition-colors"
+                      >
+                        <LogIn size={14} /> Log In
+                      </Link>
+                    </div>
+                  )}
+
+                  <form id="checkout-form" onSubmit={handleSubmit} className="space-y-6">
                   <div className="bg-white/5 p-4 rounded-2xl border border-white/5 flex items-start gap-3 mb-6">
                     <Truck className="text-white/40 mt-1" size={20} />
                     <div>
@@ -383,6 +415,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     </div>
                   </div>
                 </form>
+                </div>
               )}
 
               {step === "success" && (

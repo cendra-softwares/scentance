@@ -21,7 +21,8 @@ export const CreateOrderSchema = z.object({
   email: z.string().email('Invalid email address').max(254, 'Email too long'),
   phone: z
     .string()
-    .regex(/^\d{10}$/, 'Phone must be exactly 10 digits'),
+    .min(10, 'Phone must be at least 10 characters')
+    .max(15, 'Phone too long'),
   address: z
     .string()
     .min(5, 'Address too short')
@@ -30,6 +31,7 @@ export const CreateOrderSchema = z.object({
   city: z.string().min(1, 'City is required').max(100, 'City name too long').trim(),
   state: z.string().min(1, 'State is required').max(100, 'State name too long').trim(),
   pincode: z.string().regex(/^\d{6}$/, 'Pincode must be exactly 6 digits'),
+  user_id: z.string().optional(),
 });
 
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>;

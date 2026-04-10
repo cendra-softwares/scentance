@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import Footer from "@/components/footer";
 import { CartIcon } from "@/components/cart-icon";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/lib/auth-context";
 
 const MeshBackground = dynamic(() => import("@/components/ui/mesh-background"), { ssr: false });
 
@@ -56,13 +57,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${cormorantGaramond.variable} ${gayathri.variable} antialiased dark`}
       >
-        {!isShop && <MeshBackground className="fixed inset-0 -z-10" />}
-        <div className="relative z-10">
-          {children}
-          {!isDashboard && <CartIcon />}
-          <Toaster position="top-center" richColors closeButton />
-        </div>
-        {!isDashboard && <Footer />}
+        <AuthProvider>
+          {!isShop && <MeshBackground className="fixed inset-0 -z-10" />}
+          <div className="relative z-10">
+            {children}
+            {!isDashboard && <CartIcon />}
+            <Toaster position="top-center" richColors closeButton />
+          </div>
+          {!isDashboard && <Footer />}
+        </AuthProvider>
       </body>
     </html>
   );

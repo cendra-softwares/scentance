@@ -30,6 +30,8 @@ export async function createOrder(rawData: unknown): Promise<{ success: true; or
   // 1. Validate input
   const parsed = CreateOrderSchema.safeParse(rawData);
   if (!parsed.success) {
+    const errors = parsed.error.format();
+    console.error('Order validation failed:', JSON.stringify(errors, null, 2));
     const firstError = parsed.error.issues[0]?.message ?? 'Invalid input';
     return errorResponse(firstError);
   }
@@ -87,6 +89,7 @@ export async function createOrder(rawData: unknown): Promise<{ success: true; or
       pincode: data.pincode,
       status: 'pending',
       total_amount: totalAmount,
+      user_id: data.user_id, // Link to profile/user if provided
     })
     .select()
     .single();
