@@ -96,7 +96,10 @@ Scentence is a modern digital flagship for premium perfumery. It combines a soph
 | **Styling** | Tailwind CSS 4 | Modern utility-first CSS |
 | **Visuals** | Three.js / R3F | High-end 3D mesh backgrounds |
 | **Animation** | Framer Motion | Smooth UI transitions and interactions |
-| **Database** | Supabase | PostgreSQL storage with Realtime capabilities |
+| **Database** | Cloudflare D1 | SQLite at the edge, queried through Drizzle ORM |
+| **Auth** | Better Auth | Email/password sessions stored in D1 |
+| **Storage** | Cloudflare R2 | Product image uploads |
+| **Hosting** | Cloudflare Workers | Next.js via `@opennextjs/cloudflare` |
 | **Email** | Resend | Transactional email delivery |
 | **Components** | Radix UI | Accessible UI primitives |
 | **Documents** | jsPDF / XLSX | Professional report and label generation |
@@ -114,10 +117,14 @@ scentance/
 │   │   ├── emails/        # React Email templates
 │   │   └── ui/            # Reusable UI primitives
 │   ├── lib/                # Core logic
-│   │   ├── supabase/      # Database client/server setup
+│   │   ├── auth-context.tsx # Client auth provider (Better Auth)
+│   │   ├── auth-server.ts # Better Auth instance + Drizzle adapter
 │   │   ├── store/         # State management (Zustand/Cart)
 │   │   ├── hooks/         # Custom hooks (useProducts)
 │   │   └── actions.tsx    # Server Actions for DB/Email
+│   └── db/                # Drizzle schema + D1 client
+├── drizzle/                # Generated D1 migrations
+├── wrangler.jsonc          # Worker, D1 and R2 bindings
 └── public/                 # Static assets (Fonts, Images)
 ```
 
@@ -127,15 +134,15 @@ scentance/
 
 ### Prerequisites
 
-- **Node.js** 18.0 or higher
-- **Supabase Account** (Database & Auth)
-- **Resend Account** (For transactional emails)
+- **Node.js** 22.18 or higher (required by `cf`/OpenNext)
+- **Cloudflare account** with a Worker, a D1 database and an R2 bucket
+- **Resend account** (transactional email)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/scentance.git
+   git clone https://github.com/cendra-softwares/scentance.git
    cd scentance
    ```
 
@@ -144,24 +151,51 @@ scentance/
    npm install
    ```
 
-3. **Set up environment variables**
-   Create a `.env.local` file:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   RESEND_API_KEY=your_resend_api_key
-   ```
-
-4. **Database Setup**
-   Run the following in your Supabase SQL Editor to create the necessary schema:
-   - Create `products` table (id, name, category, notes, price, image)
-   - Create `orders` table (id, customer_name, email, phone, address, city, state, pincode, status, total_amount)
-   - Create `order_items` table (id, order_id, product_id, product_name, product_price, quantity)
-
-5. **Start Development**
+3. **Authenticate wrangler**
    ```bash
-   npm run dev
+   npx wrangler login
+   npx wrangler whoami   # confirm the account from wrangler.jsonc
    ```
+
+4. **Create the D1 database and apply migrations**
+   ```bash
+   npx wrangler d1 create scentance-db   # copy the id into wrangler.jsonc
+   npm run db:migrate
+   ```
+
+5. **Set local secrets**
+   ```bash
+   cp .dev.vars.example .dev.vars   # fill BETTER_AUTH_SECRET, RESEND_API_KEY, PHONEPE_*
+   ```
+
+6. **Seed the admin account**
+   ```bash
+   ADMIN_PASSWORD='<at-least-12-chars>' node scripts/seed-admin.mjs
+   npx wrangler d1 execute scentance-db --remote --file=.tmp/seed-admin.sql
+   ```
+
+7. **Start development**
+   ```bash
+   npm run dev      # next dev, with D1/R2 bindings from wrangler.jsonc
+   npm run preview  # built Worker in workerd
+   npm run deploy   # build + deploy to Cloudflare Workers
+   ```
+
+Production secrets are set once per Worker:
+```bash
+npx wrangler secret put BETTER_AUTH_SECRET
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put PHONEPE_CLIENT_ID
+npx wrangler secret put PHONEPE_CLIENT_SECRET
+```
+
+### Schema changes
+
+Edit `src/db/schema.ts`, then:
+```bash
+npm run db:generate   # drizzle-kit generate -> drizzle/
+npm run db:migrate    # wrangler d1 migrations apply --remote
+```
 
 ---
 
@@ -170,8 +204,12 @@ scentance/
 | Table | Description |
 |-------|-------------|
 | `products` | The master archive of fragrances and their profiles. |
-| `orders` | Customer order details, shipping info, and status. |
-| `order_items` | Individual line items linked to each order. |
+| `categories`, `product_templates`, `product_variants`, `attribute_definitions`, `variant_attribute_values` | Normalized catalog (side-by-side with `products`). |
+| `orders`, `order_items` | Customer orders, shipping info, status and line items. |
+| `profiles` | Role per user (`admin` / `customer`), linked to `user`. |
+| `guest_sessions` | Guest checkout tokens (cookie-backed, 30 day expiry). |
+| `audit_logs`, `contact_messages` | Admin audit trail and contact form submissions. |
+| `user`, `session`, `account`, `verification` | Better Auth core tables. |
 
 ---
 

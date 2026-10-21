@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 export interface AttributeDefinition {
   id: string;
@@ -17,27 +16,14 @@ export function useAttributes(categorySlug?: string) {
   useEffect(() => {
     async function fetchAttributes() {
       try {
-        const supabase = createClient();
-        
-        let query = supabase.from("attribute_definitions").select("id, category_id, name, data_type");
-
-        if (categorySlug) {
-          // Find category ID
-          const { data: category } = await supabase
-            .from("categories")
-            .select("id")
-            .eq("slug", categorySlug)
-            .single();
-          
-          if (category) {
-            query = query.eq("category_id", category.id);
-          }
+        const query = categorySlug ? `?category=${encodeURIComponent(categorySlug)}` : "";
+        const response = await fetch(`/api/attributes${query}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch attributes (${response.status})`);
         }
+        const data: unknown = await response.json();
 
-        const { data, error } = await query;
-
-        if (error) throw error;
-        setAttributes(data || []);
+        setAttributes(Array.isArray(data) ? (data as AttributeDefinition[]) : []);
       } catch (err) {
         // Silent fail - attributes are optional
       } finally {

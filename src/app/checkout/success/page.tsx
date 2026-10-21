@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle, XCircle, Loader2, RefreshCw } from "lucide-react";
 
 type Status = "loading" | "success" | "failed" | "pending";
 
-export default function CheckoutSuccessPage() {
+function CheckoutSuccessPageContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const [status, setStatus] = useState<Status>("loading");
@@ -21,7 +22,7 @@ export default function CheckoutSuccessPage() {
     const checkStatus = async () => {
       try {
         const res = await fetch(`/api/phonepe/status/${orderId}`);
-        const data = await res.json();
+        const data = (await res.json()) as { state?: string };
 
         if (data.state === "COMPLETED") {
           setStatus("success");
@@ -155,5 +156,13 @@ export default function CheckoutSuccessPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={null}>
+      <CheckoutSuccessPageContent />
+    </Suspense>
   );
 }

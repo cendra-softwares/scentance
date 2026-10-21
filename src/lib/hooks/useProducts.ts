@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 export interface Product {
   id: number;
@@ -30,18 +29,14 @@ export function useProducts() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from("products")
-          .select("id, name, category, notes, price, volume, image, discount_percent, top_note, middle_note, bottom_note, fragrance_type, product_type, strength, sustainable, preferences, is_active")
-          .order("id", { ascending: true });
-
-        if (error) {
-          throw error;
+        const response = await fetch("/api/products");
+        if (!response.ok) {
+          throw new Error(`Failed to fetch products (${response.status})`);
         }
-        setProducts(data || []);
-      } catch (err: any) {
-        setError(err.message);
+        const data: unknown = await response.json();
+        setProducts(Array.isArray(data) ? (data as Product[]) : []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch products");
       } finally {
         setLoading(false);
       }

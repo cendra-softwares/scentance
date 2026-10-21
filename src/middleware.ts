@@ -1,59 +1,29 @@
-import { createServerClient } from '@supabase/ssr';
+import { getSessionCookie } from 'better-auth/cookies';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+/**
+ * Cheap edge guard: only checks that a Better Auth session cookie exists.
+ *
+ * The cookie is opaque here (no secret, no DB access in middleware), so the
+ * real session validation and the admin-role check happen server-side in
+ * `src/app/dashboard/layout.tsx` and the dashboard pages.
+ */
+export function middleware(request: NextRequest) {
+  const { pathname, search } = request.nextUrl;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
+  if (pathname.startsWith('/dashboard')) {
+    const sessionCookie = getSessionCookie(request);
 
-  // Refresh session if expired
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Protect /dashboard/* routes
-  if (request.nextUrl.pathname.startsWith('/dashboard')) {
-    if (!user) {
+    if (!sessionCookie) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = '/login';
-      redirectUrl.searchParams.set('redirectedFrom', request.nextUrl.pathname);
-      return NextResponse.redirect(redirectUrl);
-    }
-
-    // Check admin role
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'admin') {
-      const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = '/';
+      redirectUrl.search = '';
+      redirectUrl.searchParams.set('redirectedFrom', `${pathname}${search}`);
       return NextResponse.redirect(redirectUrl);
     }
   }
 
-  return supabaseResponse;
+  return NextResponse.next();
 }
 
 export const config = {
@@ -64,7 +34,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public files (images, etc.)
-     * - api routes (handled separately)
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],

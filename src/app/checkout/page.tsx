@@ -33,7 +33,11 @@ export default function CheckoutPage() {
         body: JSON.stringify({ amount: finalAmount }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as {
+        success?: boolean;
+        redirectUrl?: string;
+        error?: string;
+      };
 
       if (!data.success || !data.redirectUrl) {
         throw new Error(data.error || "Failed to create order");

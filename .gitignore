@@ -36,6 +36,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# cloudflare
+.wrangler/
+.open-next/
+.dev.vars*
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
@@ -48,3 +53,9 @@ RAZORPAY_INTEGRATION_RESEARCH.md
 PHONEPE_INTEGRATION_RESEARCH.md
 PAYMENT_*.md
 SECURITY-AUDIT.md
+
+# local migration scratch
+.tmp/
+
+# agent harness state
+.omp/

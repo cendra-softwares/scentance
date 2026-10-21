@@ -1,6 +1,7 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { getDb } from '@/db';
+import { auditLogs } from '@/db/schema';
 import { getAuthenticatedUser } from '@/lib/auth';
 
 /**
@@ -40,7 +41,6 @@ export async function logAuditEvent(
   details?: Record<string, unknown>
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createClient();
     const authResult = await getAuthenticatedUser();
 
     if (!authResult || !authResult.user) {
@@ -48,19 +48,15 @@ export async function logAuditEvent(
       return { success: false, error: 'Unauthorized' };
     }
 
-    const { error } = await supabase.from('audit_logs').insert({
-      user_id: authResult.user.id,
-      user_email: authResult.user.email,
+    const db = await getDb();
+    await db.insert(auditLogs).values({
+      userId: authResult.user.id,
+      userEmail: authResult.user.email,
       action,
-      resource_type: resourceType,
-      resource_id: resourceId,
-      details,
+      resourceType,
+      resourceId,
+      details: details ?? null,
     });
-
-    if (error) {
-      console.error('Failed to write audit log:', error);
-      return { success: false, error: 'Failed to log audit event' };
-    }
 
     return { success: true };
   } catch (err) {

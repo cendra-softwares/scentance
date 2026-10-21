@@ -5,7 +5,7 @@ import { getPhonePeClient, getRedirectBaseUrl } from "@/lib/phonepe";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = (await request.json()) as { amount?: number };
     const { amount } = body;
 
     // Validate amount (PhonePe sandbox: ₹1 - ₹1000)

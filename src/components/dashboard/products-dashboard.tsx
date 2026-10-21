@@ -15,9 +15,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createProduct, updateProduct, deleteProduct } from "@/lib/actions";
-import { validateImageFile, ALLOWED_IMAGE_TYPES, MAX_FILE_SIZE } from "@/lib/schemas";
+import { validateImageFile, ALLOWED_IMAGE_TYPES } from "@/lib/schemas";
 import { motion, AnimatePresence } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 
 interface ProductsDashboardProps {
@@ -249,27 +248,29 @@ function ProductForm({ product, onClose, onSave }: {
 
     setIsUploading(true);
     try {
-      const supabase = createClient();
-      // Sanitize extension — only allow known image extensions
-      const rawExt = file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
-      const safeExt = ['jpg', 'jpeg', 'png', 'webp', 'avif'].includes(rawExt) ? rawExt : 'jpg';
-      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${safeExt}`;
-      const filePath = `products/${fileName}`;
+      const body = new FormData();
+      body.append('file', file);
 
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, {
-          contentType: file.type,
-          cacheControl: '3600',
-        });
+      const response = await fetch('/api/admin/products/upload', {
+        method: 'POST',
+        body,
+      });
 
-      if (uploadError) throw uploadError;
+      const result: unknown = await response.json();
+      const url =
+        result && typeof result === 'object' && 'url' in result && typeof result.url === 'string'
+          ? result.url
+          : null;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
+      if (!response.ok || !url) {
+        const message =
+          result && typeof result === 'object' && 'error' in result && typeof result.error === 'string'
+            ? result.error
+            : 'Upload failed';
+        throw new Error(message);
+      }
 
-      setFormData(prev => ({ ...prev, image: publicUrl }));
+      setFormData(prev => ({ ...prev, image: url }));
     } catch (error) {
       console.error('Error uploading image:', error);
       alert('Upload failed');

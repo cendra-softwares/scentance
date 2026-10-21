@@ -1,9 +1,10 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { XCircle, ArrowLeft } from "lucide-react";
 
-export default function CheckoutFailurePage() {
+function CheckoutFailurePageContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const code = searchParams.get("code");
@@ -61,5 +62,13 @@ export default function CheckoutFailurePage() {
         </a>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutFailurePage() {
+  return (
+    <Suspense fallback={null}>
+      <CheckoutFailurePageContent />
+    </Suspense>
   );
 }

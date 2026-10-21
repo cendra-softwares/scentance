@@ -21,7 +21,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { EllipsisVerticalIcon, CircleUserRoundIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
+import { useAuth } from "@/lib/auth-context"
 
 export function NavUser({
   user,
@@ -33,11 +33,10 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const { signOut } = useAuth()
 
-  // Client-side logout with @supabase/ssr handles cookie clearing properly
   const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await signOut();
     window.location.href = "/login";
   };
 

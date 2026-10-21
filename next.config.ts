@@ -1,4 +1,8 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
+
+// Makes `env.DB` / `env.IMAGES` available inside `next dev`.
+initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {
   compiler: {
@@ -10,9 +14,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'ieeqacvjrjissxdbntkh.supabase.co',
+        hostname: 'images.scentenceparfum.in',
         port: '',
-        pathname: '/storage/v1/object/public/**',
+        pathname: '/**',
       },
     ],
   },
@@ -61,9 +65,9 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://mercury-uat.phonepe.com https://mercury.phonepe.com",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' blob: data: https://*.supabase.co https://js.stripe.com https://*.phonepe.com",
+              "img-src 'self' blob: data: https://images.scentenceparfum.in https://js.stripe.com https://*.phonepe.com",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co https://api.stripe.com https://api-preprod.phonepe.com https://api.phonepe.com",
+              "connect-src 'self' https://api.stripe.com https://api-preprod.phonepe.com https://api.phonepe.com",
               "frame-src 'self' https://js.stripe.com https://mercury-uat.phonepe.com https://mercury.phonepe.com",
             ].join('; '),
           },

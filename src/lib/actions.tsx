@@ -1,9 +1,13 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { eq, inArray } from 'drizzle-orm';
+import { Resend } from 'resend';
+
 import { requireAdmin } from '@/lib/auth';
 import { logAuditEvent } from '@/lib/audit';
-import { Resend } from 'resend';
+import { getDb } from '@/db';
+import { contactMessages, orderItems, orders, products } from '@/db/schema';
+import { readEnv } from '@/lib/env';
 import { OrderReceivedEmail } from '@/components/emails/order-received';
 import { OrderConfirmedEmail } from '@/components/emails/order-confirmed';
 import {
@@ -16,12 +20,41 @@ import {
 } from '@/lib/schemas';
 import type { Product } from '@/lib/types';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  return new Resend(readEnv('RESEND_API_KEY'));
+}
 
 // ─── Helper: Generic error response ──────────────────────────────────────────
 
 function errorResponse(message: string): { success: false; error: string } {
   return { success: false, error: message };
+}
+
+// ─── Helper: DB row -> legacy snake_case Product shape ───────────────────────
+
+type ProductRow = typeof products.$inferSelect;
+
+function toProduct(row: ProductRow): Product {
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category,
+    notes: row.notes ?? '',
+    price: row.price,
+    volume: row.volume,
+    image: row.image,
+    discount_percent: row.discountPercent ?? 0,
+    slug: row.slug ?? undefined,
+    is_active: row.isActive ?? undefined,
+    top_note: row.topNote ?? undefined,
+    middle_note: row.middleNote ?? undefined,
+    bottom_note: row.bottomNote ?? undefined,
+    fragrance_type: row.fragranceType ?? undefined,
+    product_type: row.productType ?? undefined,
+    strength: row.strength ?? undefined,
+    sustainable: row.sustainable ?? undefined,
+    preferences: row.preferences ?? undefined,
+  };
 }
 
 // ─── Order Actions ───────────────────────────────────────────────────────────
@@ -37,23 +70,24 @@ export async function createOrder(rawData: unknown): Promise<{ success: true; or
   }
 
   const data: CreateOrderInput = parsed.data;
-  const supabase = await createClient();
+  const db = await getDb();
 
   // 2. Look up actual prices from database (NEVER trust client prices)
   const productIds = data.items.map((item) => item.id);
-  const { data: dbProducts, error: productsError } = await supabase
-    .from('products')
-    .select('id, price, discount_percent')
-    .in('id', productIds);
-
-  if (productsError || !dbProducts) {
-    console.error('Error fetching product prices:', productsError);
+  let dbProducts: { id: number; price: string; discountPercent: number | null }[];
+  try {
+    dbProducts = await db
+      .select({ id: products.id, price: products.price, discountPercent: products.discountPercent })
+      .from(products)
+      .where(inArray(products.id, productIds));
+  } catch (error) {
+    console.error('Error fetching product prices:', error);
     return errorResponse('Could not verify product prices');
   }
 
   // 3. Build a price map from DB
   const priceMap = new Map(
-    dbProducts.map((p) => [p.id, { price: p.price, discount: p.discount_percent ?? 0 }])
+    dbProducts.map((p) => [p.id, { price: p.price, discount: p.discountPercent ?? 0 }])
   );
 
   // 4. Verify all items exist and calculate total from DB prices
@@ -76,58 +110,50 @@ export async function createOrder(rawData: unknown): Promise<{ success: true; or
     };
   });
 
-  // 5. Create the main order
-  const { data: orderData, error: orderError } = await supabase
-    .from('orders')
-    .insert({
-      customer_name: data.customer_name,
-      email: data.email,
-      phone: data.phone,
-      address: data.address,
-      city: data.city,
-      state: data.state,
-      pincode: data.pincode,
-      status: 'pending',
-      total_amount: totalAmount,
-      user_id: data.user_id, // Link to profile/user if provided
-    })
-    .select()
-    .single();
-
-  if (orderError) {
-    console.error('Error creating order:', orderError);
-    return errorResponse('Failed to create order');
-  }
-
-  // 6. Create order items with verified prices
-  const orderItems = verifiedItems.map((item) => ({
-    order_id: orderData.id,
-    product_id: item.id,
-    product_name: item.name,
-    product_price: item.verifiedPriceString,
-    volume: item.volume,
+  // 5. Create the main order and its items atomically
+  const orderId = crypto.randomUUID();
+  const orderedItems = verifiedItems.map((item) => ({
+    orderId,
+    productId: item.id,
+    productName: item.name,
+    productPrice: item.verifiedPriceString,
+    volume: item.volume ?? null,
     quantity: item.quantity,
   }));
 
-  const { error: itemsError } = await supabase
-    .from('order_items')
-    .insert(orderItems);
-
-  if (itemsError) {
-    console.error('Error creating order items:', itemsError);
-    return errorResponse('Failed to create order items');
+  try {
+    await db.batch([
+      db.insert(orders).values({
+        id: orderId,
+        customerName: data.customer_name,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        pincode: data.pincode,
+        status: 'pending',
+        totalAmount,
+        userId: data.user_id ?? null,
+      }),
+      db.insert(orderItems).values(orderedItems),
+    ]);
+  } catch (error) {
+    console.error('Error creating order:', error);
+    return errorResponse('Failed to create order');
   }
 
-  // 7. Send confirmation email
+  // 6. Send confirmation email (best-effort)
   try {
+    const resend = getResend();
     await resend.emails.send({
       from: 'Scentence <orders@scentenceparfum.com>',
       to: [data.email],
-      subject: `Order Received - ${orderData.id.slice(0, 8).toUpperCase()}`,
+      subject: `Order Received - ${orderId.slice(0, 8).toUpperCase()}`,
       react: (
         <OrderReceivedEmail
           customerName={data.customer_name}
-          orderId={orderData.id}
+          orderId={orderId}
           items={verifiedItems.map((item) => ({
             name: item.name,
             quantity: item.quantity,
@@ -149,7 +175,7 @@ export async function createOrder(rawData: unknown): Promise<{ success: true; or
     // Don't fail the order — email is best-effort
   }
 
-  return { success: true, orderId: orderData.id };
+  return { success: true, orderId };
 }
 
 export async function updateOrderStatus(orderId: string, status: string) {
@@ -164,15 +190,16 @@ export async function updateOrderStatus(orderId: string, status: string) {
   const auth = await requireAdmin();
   if (!auth) return errorResponse('Unauthorized');
 
-  const supabase = await createClient();
+  const db = await getDb();
 
-  const { data, error } = await supabase
-    .from('orders')
-    .update({ status: parsed.data.status })
-    .eq('id', parsed.data.orderId)
-    .select();
-
-  if (error) {
+  let data: { id: string }[];
+  try {
+    data = await db
+      .update(orders)
+      .set({ status: parsed.data.status })
+      .where(eq(orders.id, parsed.data.orderId))
+      .returning({ id: orders.id });
+  } catch (error) {
     console.error('Error updating order status:', error);
     return errorResponse('Failed to update order status');
   }
@@ -202,35 +229,41 @@ export async function sendOrderConfirmationEmail(orderId: string) {
   const auth = await requireAdmin();
   if (!auth) return errorResponse('Unauthorized');
 
-  const supabase = await createClient();
+  const db = await getDb();
 
   // 3. Fetch order details with items
-  const { data: order, error } = await supabase
-    .from('orders')
-    .select('*, order_items(*)')
-    .eq('id', orderId)
-    .single();
-
-  if (error || !order || !order.email) {
+  let order: typeof orders.$inferSelect | undefined;
+  let items: (typeof orderItems.$inferSelect)[] = [];
+  try {
+    [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+    if (order) {
+      items = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+    }
+  } catch (error) {
     console.error('Error fetching order for confirmation email:', error);
     return errorResponse('Order not found or email missing');
   }
 
+  if (!order || !order.email) {
+    return errorResponse('Order not found or email missing');
+  }
+
   try {
+    const resend = getResend();
     await resend.emails.send({
       from: 'Scentence <orders@scentenceparfum.com>',
       to: [order.email],
       subject: `Order Confirmed - ${order.id.slice(0, 8).toUpperCase()}`,
       react: (
         <OrderConfirmedEmail
-          customerName={order.customer_name}
+          customerName={order.customerName}
           orderId={order.id}
-          items={order.order_items.map((item: { product_name: string; quantity: number; product_price: string }) => ({
-            name: item.product_name,
+          items={items.map((item) => ({
+            name: item.productName,
             quantity: item.quantity,
-            price: item.product_price,
+            price: item.productPrice,
           }))}
-          totalAmount={order.total_amount}
+          totalAmount={order.totalAmount ?? 0}
         />
       ),
     });
@@ -255,15 +288,12 @@ export async function deleteOrder(orderId: string) {
   const auth = await requireAdmin();
   if (!auth) return errorResponse('Unauthorized');
 
-  const supabase = await createClient();
+  const db = await getDb();
 
-  const { data, error } = await supabase
-    .from('orders')
-    .delete()
-    .eq('id', orderId)
-    .select();
-
-  if (error) {
+  let data: { id: string }[];
+  try {
+    data = await db.delete(orders).where(eq(orders.id, orderId)).returning({ id: orders.id });
+  } catch (error) {
     console.error('Error deleting order:', error);
     return errorResponse('Failed to delete order');
   }
@@ -292,23 +322,44 @@ export async function createProduct(rawProduct: unknown): Promise<{ success: tru
   const auth = await requireAdmin();
   if (!auth) return errorResponse('Unauthorized');
 
-  const supabase = await createClient();
+  const db = await getDb();
+  const input = parsed.data;
 
-  const { data, error } = await supabase
-    .from('products')
-    .insert(parsed.data)
-    .select()
-    .single();
-
-  if (error) {
+  let data: ProductRow | undefined;
+  try {
+    [data] = await db
+      .insert(products)
+      .values({
+        name: input.name,
+        category: input.category,
+        notes: input.notes,
+        price: input.price,
+        volume: input.volume,
+        image: input.image,
+        discountPercent: input.discount_percent,
+        topNote: input.top_note,
+        middleNote: input.middle_note,
+        bottomNote: input.bottom_note,
+        fragranceType: input.fragrance_type,
+        productType: input.product_type,
+        strength: input.strength,
+        sustainable: input.sustainable,
+        preferences: input.preferences,
+      })
+      .returning();
+  } catch (error) {
     console.error('Error creating product:', error);
+    return errorResponse('Failed to create product');
+  }
+
+  if (!data) {
     return errorResponse('Failed to create product');
   }
 
   // Log the admin action
   await logAuditEvent('create_product', 'product', String(data.id), { name: data.name });
 
-  return { success: true, product: data };
+  return { success: true, product: toProduct(data) };
 }
 
 export async function updateProduct(id: number, rawUpdates: Record<string, unknown>): Promise<{ success: true; product: Product } | { success: false; error: string }> {
@@ -323,27 +374,48 @@ export async function updateProduct(id: number, rawUpdates: Record<string, unkno
   const auth = await requireAdmin();
   if (!auth) return errorResponse('Unauthorized');
 
-  const supabase = await createClient();
+  const db = await getDb();
 
   // Remove id from updates
-  const { id: _, ...updates } = parsed.data;
+  const { id: _id, ...updates } = parsed.data;
 
-  const { data, error } = await supabase
-    .from('products')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
+  const changes: Partial<typeof products.$inferInsert> = {};
+  if (updates.name !== undefined) changes.name = updates.name;
+  if (updates.category !== undefined) changes.category = updates.category;
+  if (updates.notes !== undefined) changes.notes = updates.notes;
+  if (updates.price !== undefined) changes.price = updates.price;
+  if (updates.volume !== undefined) changes.volume = updates.volume;
+  if (updates.image !== undefined) changes.image = updates.image;
+  if (updates.discount_percent !== undefined) changes.discountPercent = updates.discount_percent;
+  if (updates.top_note !== undefined) changes.topNote = updates.top_note;
+  if (updates.middle_note !== undefined) changes.middleNote = updates.middle_note;
+  if (updates.bottom_note !== undefined) changes.bottomNote = updates.bottom_note;
+  if (updates.fragrance_type !== undefined) changes.fragranceType = updates.fragrance_type;
+  if (updates.product_type !== undefined) changes.productType = updates.product_type;
+  if (updates.strength !== undefined) changes.strength = updates.strength;
+  if (updates.sustainable !== undefined) changes.sustainable = updates.sustainable;
+  if (updates.preferences !== undefined) changes.preferences = updates.preferences;
 
-  if (error) {
+  let data: ProductRow | undefined;
+  try {
+    if (Object.keys(changes).length === 0) {
+      [data] = await db.select().from(products).where(eq(products.id, id)).limit(1);
+    } else {
+      [data] = await db.update(products).set(changes).where(eq(products.id, id)).returning();
+    }
+  } catch (error) {
     console.error('Error updating product:', error);
+    return errorResponse('Failed to update product');
+  }
+
+  if (!data) {
     return errorResponse('Failed to update product');
   }
 
   // Log the admin action
   await logAuditEvent('update_product', 'product', String(id), { updates: rawUpdates });
 
-  return { success: true, product: data };
+  return { success: true, product: toProduct(data) };
 }
 
 export async function deleteProduct(id: number) {
@@ -356,14 +428,11 @@ export async function deleteProduct(id: number) {
   const auth = await requireAdmin();
   if (!auth) return errorResponse('Unauthorized');
 
-  const supabase = await createClient();
+  const db = await getDb();
 
-  const { error } = await supabase
-    .from('products')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
+  try {
+    await db.delete(products).where(eq(products.id, id));
+  } catch (error) {
     console.error('Error deleting product:', error);
     return errorResponse('Failed to delete product');
   }
@@ -389,20 +458,17 @@ export async function submitContactForm(
   const { name, email, message } = parsed.data;
 
   // 2. Store in database (optional - can also just send email)
-  const supabase = await createClient();
-  const { error: insertError } = await supabase.from('contact_messages').insert({
-    name,
-    email,
-    message,
-  });
-
-  if (insertError) {
+  try {
+    const db = await getDb();
+    await db.insert(contactMessages).values({ name, email, message });
+  } catch (insertError) {
     console.error('Error storing contact message:', insertError);
     // Don't fail - still try to send confirmation email
   }
 
   // 3. Send confirmation email to customer
   try {
+    const resend = getResend();
     await resend.emails.send({
       from: 'Scentence <support@scentenceparfum.com>',
       to: [email],

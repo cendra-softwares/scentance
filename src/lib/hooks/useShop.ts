@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Product } from "@/lib/types";
 
 export function useShop(categorySlug?: string) {
@@ -12,23 +11,16 @@ export function useShop(categorySlug?: string) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const supabase = createClient();
-        
-        let query = supabase
-          .from("products")
-          .select("id, name, category, notes, price, volume, image, discount_percent, top_note, middle_note, bottom_note, fragrance_type, product_type, strength, sustainable, preferences")
-          .eq("is_active", true);
-
-        if (categorySlug && categorySlug !== "all") {
-          query = query.eq("category", categorySlug);
+        const query = categorySlug ? `?category=${encodeURIComponent(categorySlug)}` : "";
+        const response = await fetch(`/api/shop${query}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch products (${response.status})`);
         }
+        const prodData: unknown = await response.json();
 
-        const { data: prodData, error: prodError } = await query.order("created_at", { ascending: false });
-
-        if (prodError) throw prodError;
-        setProducts(prodData || []);
-      } catch (err: any) {
-        setError(err.message);
+        setProducts(Array.isArray(prodData) ? (prodData as Product[]) : []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch products");
       } finally {
         setLoading(false);
       }

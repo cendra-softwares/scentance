@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, User } from "lucide-react";
 import Link from "next/link";
@@ -50,7 +49,7 @@ export default function LoginPage() {
     if (signUpError) {
       setError("Unable to create account. Please try again.");
     } else {
-      setMessage("Check your email for the confirmation link!");
+      setMessage("Account created. You are now signed in.");
     }
 
     setLoading(false);

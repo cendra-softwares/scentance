@@ -1,0 +1,39 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "scentance",
+  "account_id": "5e95eada37a58761450407a173978799",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-21",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "scentance"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "scentance-db",
+      "database_id": "e1e80ed0-4a73-4b07-add9-1e6f666ec918",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "scentance-images"
+    }
+  ],
+  "vars": {
+    "NEXT_PUBLIC_BASE_URL": "https://scentenceparfum.in",
+    "IMAGE_PUBLIC_URL": "https://images.scentenceparfum.in"
+  }
+}
