@@ -2,7 +2,7 @@
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Geist, Geist_Mono, Gayathri } from "next/font/google";
+import { Geist, Geist_Mono, Gayathri, Instrument_Serif, Jost } from "next/font/google";
 import "./globals.css";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
@@ -35,6 +35,18 @@ const gayathri = Gayathri({
   weight: "700", // Assuming 'bold' corresponds to a weight of 700
 });
 
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+});
+
+const jost = Jost({
+  variable: "--font-jost",
+  subsets: ["latin"],
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -43,6 +55,8 @@ export default function RootLayout({
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith("/dashboard") || pathname === "/login";
   const isShop = pathname?.startsWith("/shop");
+  // The landing page mounts its own entrance shader inside the hero.
+  const isLanding = pathname === "/";
 
   return (
     <html lang="en">
@@ -55,13 +69,13 @@ export default function RootLayout({
         <meta name="description" content="Discover a meticulously curated archive of essence. From avant-garde originals to timeless master compositions." />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${cormorantGaramond.variable} ${gayathri.variable} antialiased dark`}
+        className={`${geistSans.variable} ${geistMono.variable} ${cormorantGaramond.variable} ${gayathri.variable} ${instrumentSerif.variable} ${jost.variable} antialiased dark`}
       >
         <AuthProvider>
-          {!isShop && <MeshBackground className="fixed inset-0 -z-10" />}
+          {!isShop && !isLanding && <MeshBackground className="fixed inset-0 -z-10" />}
           <div className="relative z-10">
             {children}
-            {!isDashboard && <CartIcon />}
+            {!isDashboard && <CartIcon hideTrigger={isLanding} />}
             <Toaster position="top-center" richColors closeButton />
           </div>
           {!isDashboard && <Footer />}

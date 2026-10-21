@@ -6,7 +6,14 @@ import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/store/useCart";
 import { CartDrawer } from "./cart-drawer";
 
-export function CartIcon() {
+const OPEN_CART_EVENT = "scentence:open-cart";
+
+/** Open the cart drawer from anywhere, e.g. a header bag button. */
+export function openCart() {
+  window.dispatchEvent(new Event(OPEN_CART_EVENT));
+}
+
+export function CartIcon({ hideTrigger = false }: { hideTrigger?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const { totalItems, forceCartUp } = useCart();
@@ -16,12 +23,18 @@ export function CartIcon() {
     setIsMounted(true);
   }, []);
 
+  useEffect(() => {
+    const open = () => setIsOpen(true);
+    window.addEventListener(OPEN_CART_EVENT, open);
+    return () => window.removeEventListener(OPEN_CART_EVENT, open);
+  }, []);
+
   if (!isMounted) return null;
 
   return (
     <>
       <AnimatePresence>
-        {count > 0 && (
+        {count > 0 && !hideTrigger && (
           <motion.button
             initial={{ opacity: 0, scale: 0, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
