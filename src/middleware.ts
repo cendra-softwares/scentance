@@ -11,6 +11,14 @@ import { NextResponse, type NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
+  // Canonical host: keep sessions on the apex domain.
+  const host = request.headers.get('host') ?? '';
+  if (host.startsWith('www.')) {
+    const url = request.nextUrl.clone();
+    url.host = host.slice(4);
+    return NextResponse.redirect(url, 308);
+  }
+
   if (pathname.startsWith('/dashboard')) {
     const sessionCookie = getSessionCookie(request);
 

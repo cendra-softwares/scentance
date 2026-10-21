@@ -8,6 +8,10 @@
   "observability": {
     "enabled": true
   },
+  "routes": [
+    { "pattern": "scentenceparfum.in", "custom_domain": true },
+    { "pattern": "www.scentenceparfum.in", "custom_domain": true }
+  ],
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
