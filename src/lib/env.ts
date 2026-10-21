@@ -2,7 +2,6 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export type CloudflareBindings = {
   DB: D1Database;
-  IMAGES: R2Bucket;
   RESEND_API_KEY?: string;
   PHONEPE_CLIENT_ID?: string;
   PHONEPE_CLIENT_SECRET?: string;
@@ -12,7 +11,8 @@ export type CloudflareBindings = {
   BETTER_AUTH_URL?: string;
   ADMIN_EMAIL?: string;
   NEXT_PUBLIC_BASE_URL?: string;
-  IMAGE_PUBLIC_URL?: string;
+  GITHUB_TOKEN?: string;
+  GITHUB_REPO?: string;
 };
 
 /**
@@ -41,9 +41,4 @@ export function readEnv<K extends keyof CloudflareBindings>(key: K): string | un
 /** Base URL used for redirects and email links. */
 export function getBaseUrl(): string {
   return readEnv('NEXT_PUBLIC_BASE_URL')?.replace(/\/$/, '') ?? 'https://scentenceparfum.in';
-}
-
-/** Public base URL for R2-hosted images. */
-export function getImageBaseUrl(): string {
-  return readEnv('IMAGE_PUBLIC_URL')?.replace(/\/$/, '') ?? 'https://images.scentenceparfum.in';
 }

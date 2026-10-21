@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 
 import { requireAdmin } from '@/lib/auth';
-import { getBindings, getImageBaseUrl } from '@/lib/env';
+import { readEnv } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,11 +14,36 @@ const ALLOWED_TYPES: Record<string, string> = {
 };
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const GITHUB_API = 'https://api.github.com';
 
+type ContentsResponse = {
+  commit?: { sha?: string };
+  content?: { path?: string };
+};
+
+/**
+ * Store product images in the public repository.
+ *
+ * R2 is not enabled on this account, so uploads commit the file to
+ * `public/product-images/products/` through the GitHub Contents API. The
+ * returned URL is pinned to the commit SHA on jsDelivr, so it is immutable and
+ * cacheable; the file is also bundled into the next Worker deploy, which is why
+ * the path lives under `public/`.
+ */
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin();
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const token = readEnv('GITHUB_TOKEN');
+  const repo = readEnv('GITHUB_REPO') ?? 'cendra-softwares/scentance';
+
+  if (!token) {
+    return NextResponse.json(
+      { error: 'Image storage is not configured (GITHUB_TOKEN missing)' },
+      { status: 503 }
+    );
   }
 
   try {
@@ -44,21 +69,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { IMAGES } = getBindings();
-    if (!IMAGES) {
-      return NextResponse.json({ error: 'Image storage unavailable' }, { status: 500 });
-    }
-
     const key = `products/${randomBytes(8).toString('hex')}_${Date.now()}.${ext}`;
+    const path = `public/product-images/${key}`;
+    const content = Buffer.from(await file.arrayBuffer()).toString('base64');
 
-    await IMAGES.put(key, file.stream(), {
-      httpMetadata: {
-        contentType: file.type,
-        cacheControl: 'public, max-age=3600',
+    const response = await fetch(`${GITHUB_API}/repos/${repo}/contents/${path}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': 'scentance-worker',
       },
+      body: JSON.stringify({
+        message: `chore(images): add ${key}`,
+        content,
+        branch: 'main',
+      }),
     });
 
-    return NextResponse.json({ url: `${getImageBaseUrl()}/${key}` });
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error('GitHub upload failed:', response.status, detail);
+      return NextResponse.json(
+        { error: `Image upload failed (${response.status})` },
+        { status: 502 }
+      );
+    }
+
+    const json = (await response.json()) as ContentsResponse;
+    const sha = json.commit?.sha;
+
+    const url = sha
+      ? `https://cdn.jsdelivr.net/gh/${repo}@${sha}/${path}`
+      : `https://raw.githubusercontent.com/${repo}/main/${path}`;
+
+    return NextResponse.json({ url });
   } catch (error) {
     console.error('Error uploading product image:', error);
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });

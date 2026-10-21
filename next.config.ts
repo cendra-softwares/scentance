@@ -14,9 +14,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'images.scentenceparfum.in',
+        hostname: 'cdn.jsdelivr.net',
         port: '',
-        pathname: '/**',
+        pathname: '/gh/**',
       },
     ],
   },
@@ -65,7 +65,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://mercury-uat.phonepe.com https://mercury.phonepe.com",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' blob: data: https://images.scentenceparfum.in https://js.stripe.com https://*.phonepe.com",
+              "img-src 'self' blob: data: https://cdn.jsdelivr.net https://raw.githubusercontent.com https://js.stripe.com https://*.phonepe.com",
               "font-src 'self'",
               "connect-src 'self' https://api.stripe.com https://api-preprod.phonepe.com https://api.phonepe.com",
               "frame-src 'self' https://js.stripe.com https://mercury-uat.phonepe.com https://mercury.phonepe.com",

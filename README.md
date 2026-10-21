@@ -98,7 +98,7 @@ Scentence is a modern digital flagship for premium perfumery. It combines a soph
 | **Animation** | Framer Motion | Smooth UI transitions and interactions |
 | **Database** | Cloudflare D1 | SQLite at the edge, queried through Drizzle ORM |
 | **Auth** | Better Auth | Email/password sessions stored in D1 |
-| **Storage** | Cloudflare R2 | Product image uploads |
+| **Storage** | GitHub + jsDelivr | Admin product images are committed to `public/product-images/` |
 | **Hosting** | Cloudflare Workers | Next.js via `@opennextjs/cloudflare` |
 | **Email** | Resend | Transactional email delivery |
 | **Components** | Radix UI | Accessible UI primitives |
@@ -135,7 +135,7 @@ scentance/
 ### Prerequisites
 
 - **Node.js** 22.18 or higher (required by `cf`/OpenNext)
-- **Cloudflare account** with a Worker, a D1 database and an R2 bucket
+- **Cloudflare account** with a Worker and a D1 database
 - **Resend account** (transactional email)
 
 ### Installation
@@ -168,13 +168,21 @@ scentance/
    cp .dev.vars.example .dev.vars   # fill BETTER_AUTH_SECRET, RESEND_API_KEY, PHONEPE_*
    ```
 
-6. **Seed the admin account**
+6. **Image uploads**
+
+   Product images are committed to this repository under
+   `public/product-images/products/` through the GitHub Contents API and served
+   from jsDelivr (pinned to the commit SHA), so no object-store subscription is
+   needed. Set `GITHUB_TOKEN` (fine-grained PAT with **Contents: read and write**
+   on this repo) as a Worker secret; `GITHUB_REPO` lives in `wrangler.jsonc`.
+
+7. **Seed the admin account**
    ```bash
    ADMIN_PASSWORD='<at-least-12-chars>' node scripts/seed-admin.mjs
    npx wrangler d1 execute scentance-db --remote --file=.tmp/seed-admin.sql
    ```
 
-7. **Start development**
+8. **Start development**
    ```bash
    npm run dev      # next dev, with D1/R2 bindings from wrangler.jsonc
    npm run preview  # built Worker in workerd
@@ -184,6 +192,7 @@ scentance/
 Production secrets are set once per Worker:
 ```bash
 npx wrangler secret put BETTER_AUTH_SECRET
+npx wrangler secret put GITHUB_TOKEN      # fine-grained PAT, Contents: read and write
 npx wrangler secret put RESEND_API_KEY
 npx wrangler secret put PHONEPE_CLIENT_ID
 npx wrangler secret put PHONEPE_CLIENT_SECRET

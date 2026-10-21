@@ -30,14 +30,8 @@
       "migrations_dir": "drizzle"
     }
   ],
-  "r2_buckets": [
-    {
-      "binding": "IMAGES",
-      "bucket_name": "scentance-images"
-    }
-  ],
   "vars": {
     "NEXT_PUBLIC_BASE_URL": "https://scentenceparfum.in",
-    "IMAGE_PUBLIC_URL": "https://images.scentenceparfum.in"
+    "GITHUB_REPO": "cendra-softwares/scentance"
   }
 }

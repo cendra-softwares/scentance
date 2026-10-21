@@ -8,6 +8,7 @@ import { logAuditEvent } from '@/lib/audit';
 import { getDb } from '@/db';
 import { contactMessages, orderItems, orders, products } from '@/db/schema';
 import { readEnv } from '@/lib/env';
+import { deleteImageIfUnused } from '@/lib/media';
 import { OrderReceivedEmail } from '@/components/emails/order-received';
 import { OrderConfirmedEmail } from '@/components/emails/order-confirmed';
 import {
@@ -396,6 +397,12 @@ export async function updateProduct(id: number, rawUpdates: Record<string, unkno
   if (updates.sustainable !== undefined) changes.sustainable = updates.sustainable;
   if (updates.preferences !== undefined) changes.preferences = updates.preferences;
 
+  const [previous] = await db
+    .select({ image: products.image })
+    .from(products)
+    .where(eq(products.id, id))
+    .limit(1);
+
   let data: ProductRow | undefined;
   try {
     if (Object.keys(changes).length === 0) {
@@ -410,6 +417,10 @@ export async function updateProduct(id: number, rawUpdates: Record<string, unkno
 
   if (!data) {
     return errorResponse('Failed to update product');
+  }
+
+  if (previous?.image && previous.image !== data.image) {
+    await deleteImageIfUnused(db, previous.image);
   }
 
   // Log the admin action
@@ -430,12 +441,21 @@ export async function deleteProduct(id: number) {
 
   const db = await getDb();
 
+  const [existing] = await db
+    .select({ image: products.image })
+    .from(products)
+    .where(eq(products.id, id))
+    .limit(1);
+
   try {
     await db.delete(products).where(eq(products.id, id));
   } catch (error) {
     console.error('Error deleting product:', error);
     return errorResponse('Failed to delete product');
   }
+
+  // Drop the uploaded image from the repository once nothing references it.
+  await deleteImageIfUnused(db, existing?.image);
 
   // Log the admin action
   await logAuditEvent('delete_product', 'product', String(id));
