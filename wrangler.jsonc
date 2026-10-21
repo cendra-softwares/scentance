@@ -8,6 +8,8 @@
   "observability": {
     "enabled": true
   },
+  // Branch builds upload versions; this serves each one at a workers.dev preview URL.
+  "preview_urls": true,
   "routes": [
     { "pattern": "scentenceparfum.in", "custom_domain": true },
     { "pattern": "www.scentenceparfum.in", "custom_domain": true }
